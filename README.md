@@ -33,3 +33,62 @@ The application helps users track income and expenses, manage budgets, and gain 
 
 ## 📁 Project Structure
 
+Vello/
+│
+├── README.md                 # Project overview and setup instructions
+├── .gitignore                # Files/folders ignored by Git
+├── package.json / pom.xml    # Dependency & project config (based on tech stack)
+│
+├── src/                      # Main source code
+│   ├── config/               # App & database configuration
+│   │   └── dbConfig.js
+│   │
+│   ├── controllers/          # Request handling logic
+│   │   ├── authController.js
+│   │   ├── transactionController.js
+│   │   └── budgetController.js
+│   │
+│   ├── models/               # Data models / entities
+│   │   ├── User.js
+│   │   ├── Transaction.js
+│   │   └── Budget.js
+│   │
+│   ├── routes/               # Application routes / APIs
+│   │   ├── authRoutes.js
+│   │   ├── transactionRoutes.js
+│   │   └── budgetRoutes.js
+│   │
+│   ├── services/             # Business logic layer
+│   │   └── financeService.js
+│   │
+│   ├── middlewares/          # Authentication & validation middleware
+│   │   └── authMiddleware.js
+│   │
+│   ├── utils/                # Helper functions
+│   │   └── dateUtils.js
+│   │
+│   └── app.js                # Main application entry point
+│
+├── public/                   # Frontend static files
+│   ├── index.html
+│   ├── css/
+│   │   └── style.css
+│   ├── js/
+│   │   └── main.js
+│   └── images/
+│
+├── database/                 # Database-related files
+│   ├── schema.sql            # Database schema
+│   └── seed.sql              # Sample data
+│
+├── tests/                    # Test cases
+│   ├── unit/
+│   └── integration/
+│
+├── docs/                     # SDGP documentation
+│   ├── SRS.pdf
+│   ├── Design_Diagrams/
+│   └── Test_Plan.pdf
+│
+└── logs/                     # Application logs
+    └── app.log
