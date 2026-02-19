@@ -11,7 +11,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      body: Container(
+      body: Container( // creating a background gradiant
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -19,7 +19,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             colors: [Color(0xFF26a69a), Color(0xFF1e8c82)],
           )
         ),
-        child: SafeArea(
+        child: SafeArea( // push the content down to prevent content from impact with the phones notches and status bars
           child: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -27,6 +27,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 40),
+                  // Making the vello logo appear on the top of the page
+                  Center(
+                    child: Image.asset(
+                      'assets/images/vello_logo.png',
+                      width: 130,
+                      height: 130,
+                      fit: BoxFit.contain
+                    )
+                  )
                 ],
               )
             )
