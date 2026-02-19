@@ -48,6 +48,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       letterSpacing: 3,
                     ),
                   ),
+                  // Adding the header text
+                  const SizedBox(height: 30),
+                  const Text(
+                    'Create Account',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  // adding the sub header
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Start managing your finances today',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white70,
+                    ),
+                  ),
+                  const SizedBox(height: 30),
                 ],
               )
             )
