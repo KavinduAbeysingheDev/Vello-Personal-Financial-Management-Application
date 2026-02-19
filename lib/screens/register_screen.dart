@@ -85,6 +85,88 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ],
                     ),
+                    child: Form(
+                      child: Column(
+                        children: [
+                          // Name Field
+                          TextFormField(
+                            decoration: InputDecoration(
+                              labelText: 'Full Name',
+                              prefixIcon: const Icon(Icons.person_outline,
+                                  color: Color(0xFF26a69a)),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Colors.grey),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:  const BorderSide(color: Color(0xFF26a69a)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20), // add a empty space
+                          // Email Field
+                          TextFormField(
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: InputDecoration(
+                              labelText: 'Email',
+                              prefixIcon: const Icon(Icons.email_outlined,
+                                  color: Color(0xFF26a69a)),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xFF26a69a)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          // Password Field
+                          TextFormField(
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              prefixIcon: const Icon(Icons.lock_outline,
+                                  color: Color(0xFF26a69a)),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:  const BorderSide(color: Colors.grey),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xFF26a69a)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20,),
+                          // Confirm Password Field
+                          TextFormField(
+                            decoration: InputDecoration(
+                              labelText: 'Confirm Password',
+                              prefixIcon: const Icon(Icons.lock_outline,
+                                  color: Color(0xFF26a69a)),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xFF26a69a)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xFF26a69a)),
+                              )
+                            ),
+                          ),
+                        ],
+                      )
+                    )
                   ),
                 ],
               )
