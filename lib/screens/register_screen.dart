@@ -34,8 +34,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       width: 130,
                       height: 130,
                       fit: BoxFit.contain
-                    )
-                  )
+                    ),
+                  ),
+                  // Add the Application Name
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Vello',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w300,
+                      color: Colors.white,
+                      letterSpacing: 3,
+                    ),
+                  ),
                 ],
               )
             )
