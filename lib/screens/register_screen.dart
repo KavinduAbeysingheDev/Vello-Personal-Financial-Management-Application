@@ -164,6 +164,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               )
                             ),
                           ),
+                          const SizedBox(height: 30),
+                          // Add the register button
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: ElevatedButton(
+                              onPressed: () {},  // placeholder
+                              child: const Text('Sign Up'),
+                            )
+                          )
                         ],
                       )
                     )
