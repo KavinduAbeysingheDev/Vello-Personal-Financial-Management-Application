@@ -172,8 +172,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             child: ElevatedButton(
                               onPressed: () {},  // placeholder
                               child: const Text('Sign Up'),
-                            )
-                          )
+                            ),
+                          ),
+                          // Sign in button
+                          const SizedBox(height: 20,),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text("Already have an account? ", style: TextStyle(color: Colors.white)),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('Sign In', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+
                         ],
                       )
                     )
