@@ -25,8 +25,17 @@ class _LoginScreenState extends State<LoginScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: const [
-                  SizedBox(height: 60),
+                children: [
+                  const SizedBox(height: 60),
+                  Center(
+                    child: Image.asset(
+                      'assets/images/vello_logo.png',
+                      width: 130,
+                      height: 130,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
