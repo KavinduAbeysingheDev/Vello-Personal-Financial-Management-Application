@@ -118,6 +118,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                 borderSide: const BorderSide(color: Color(0xFF26a69a)),
                               ),
                             ),
+                            // Email Validator
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your email';
+                              }
+                              if (!value.contains('@')) {
+                                return 'Please enter a valid email';
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 20),
                         ],
