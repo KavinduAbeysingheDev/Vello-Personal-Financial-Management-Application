@@ -162,6 +162,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                 borderSide: const BorderSide(color: Color(0xFF26a69a)),
                               ),
                             ),
+                            // Password validation
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your password';
+                              }
+                              if (value.length < 6) {
+                                return 'Password must be at least 6 characters';
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 30),
                         ],
