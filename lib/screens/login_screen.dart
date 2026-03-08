@@ -27,6 +27,16 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
+      try {
+        await _authService.signInWithEmail(
+          _emailController.text.trim(),
+          _passwordController.text.trim(),
+        );
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
     }
   }
 
