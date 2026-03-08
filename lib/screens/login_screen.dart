@@ -40,7 +40,22 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
 
-      } finally {
+      } on FirebaseAuthException catch (e) {
+        String message = 'An error occurred';
+        if (e.code == 'user-not-found') {
+          message = 'No user found with this email';
+        } else if (e.code == 'wrong-password') {
+          message = 'Wrong password';
+        } else if (e.code == 'invalid-email') {
+          message = 'Invalid email address';
+        }
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message), backgroundColor: Colors.red),
+          );
+        }
+      }finally {
         if (mounted) {
           setState(() => _isLoading = false);
         }
