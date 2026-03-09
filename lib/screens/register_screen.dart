@@ -14,6 +14,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
@@ -101,10 +104,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ],
                     ),
                     child: Form(
+                      key: _formKey,
                       child: Column(
                         children: [
                           // Name Field
                           TextFormField(
+                            controller: _nameController,
                             decoration: InputDecoration(
                               labelText: 'Full Name',
                               prefixIcon: const Icon(Icons.person_outline,
@@ -121,10 +126,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 borderSide:  const BorderSide(color: Color(0xFF26a69a)),
                               ),
                             ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your name';
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 20), // add a empty space
                           // Email Field
                           TextFormField(
+                            controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
                             decoration: InputDecoration(
                               labelText: 'Email',
@@ -138,14 +150,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 borderSide: const BorderSide(color: Color(0xFF26a69a)),
                               ),
                             ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your email';
+                              }
+                              if (!value.contains('@')) {
+                                return 'Please enter a valid email';
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 20),
                           // Password Field
                           TextFormField(
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
                             decoration: InputDecoration(
                               labelText: 'Password',
                               prefixIcon: const Icon(Icons.lock_outline,
                                   color: Color(0xFF26a69a)),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: Colors.grey,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -158,14 +194,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 borderSide: const BorderSide(color: Color(0xFF26a69a)),
                               ),
                             ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter a password';
+                              }
+                              if (value.length < 6) {
+                                return 'Password must be at least 6 characters';
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 20,),
                           // Confirm Password Field
                           TextFormField(
+                            controller: _confirmPasswordController,
+                            obscureText: _obscureConfirmPassword,
                             decoration: InputDecoration(
                               labelText: 'Confirm Password',
                               prefixIcon: const Icon(Icons.lock_outline,
                                   color: Color(0xFF26a69a)),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscureConfirmPassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: Colors.grey,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscureConfirmPassword =
+                                    !_obscureConfirmPassword;
+                                  });
+                                },
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -178,6 +239,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 borderSide: const BorderSide(color: Color(0xFF26a69a)),
                               )
                             ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please confirm your password';
+                              }
+                              if (value != _passwordController.text) {
+                                return 'Passwords do not match';
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 30),
                           // Add the register button
