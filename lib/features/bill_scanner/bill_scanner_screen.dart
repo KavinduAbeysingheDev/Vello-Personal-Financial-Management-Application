@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'bill_scanner_service.dart';
+import 'package:vello_app/main.dart';
 
 class _C {
   static const primary         = Color(0xFF00674F);
@@ -21,7 +22,8 @@ class _R {
 }
 
 class BillScannerScreen extends StatefulWidget {
-  const BillScannerScreen({super.key});
+  final VoidCallback? onMenuTap;
+  const BillScannerScreen({super.key, this.onMenuTap});
 
   @override
   State<BillScannerScreen> createState() => _BillScannerScreenState();
@@ -124,13 +126,18 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 24),
-            onPressed: () {},
+          Builder(
+            builder: (ctx) => IconButton(
+              icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 24),
+              onPressed: () => Scaffold.of(ctx).openDrawer(),
+            ),
           ),
           IconButton(
             icon: const Icon(Icons.settings_rounded, color: Colors.white, size: 22),
-            onPressed: () {},
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SettingsPage()),
+            ),
           ),
           const SizedBox(width: 4),
         ],
