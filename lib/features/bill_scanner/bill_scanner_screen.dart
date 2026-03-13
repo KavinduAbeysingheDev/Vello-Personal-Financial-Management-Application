@@ -1,20 +1,6 @@
 import 'package:flutter/material.dart';
 import 'bill_scanner_service.dart';
 
-// ═══════════════════════════════════════════════════════════════
-//  Vello Design Tokens — extracted from Figma CSS variables
-//  --primary:            #00674f
-//  --background:         #f0fdf4
-//  --secondary:          #d1fae5
-//  --muted:              #ecfdf5
-//  --muted-foreground:   #6b7280
-//  --accent:             #a7f3d0
-//  --accent-foreground:  #00674f
-//  --card:               #fff
-//  --border:             #00674f1a
-//  --ring:               #00674f
-//  --radius:             0.75rem  → 12px
-// ═══════════════════════════════════════════════════════════════
 class _C {
   static const primary         = Color(0xFF00674F);
   static const background      = Color(0xFFF0FDF4);
@@ -34,9 +20,6 @@ class _R {
   static const lg = BorderRadius.all(Radius.circular(16));
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  Bill Scanner Screen
-// ═══════════════════════════════════════════════════════════════
 class BillScannerScreen extends StatefulWidget {
   const BillScannerScreen({super.key});
 
@@ -55,7 +38,6 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
     super.dispose();
   }
 
-  // ─── Actions ─────────────────────────────────────────────────
   Future<void> _takePhoto() async {
     setState(() => _isLoading = true);
     try {
@@ -83,8 +65,7 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
       if (amount != null) {
         _showSnack('Scanned: Rs. $amount');
       } else {
-        _showSnack('Gallery access denied or no image selected.',
-            isError: true);
+        _showSnack('Gallery access denied or no image selected.', isError: true);
       }
     } catch (e) {
       if (!mounted) return;
@@ -105,7 +86,6 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
     );
   }
 
-  // ─── Build ───────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -115,7 +95,6 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
     );
   }
 
-  // ─── AppBar ───────────────────────────────────────────────────
   PreferredSizeWidget _buildAppBar() => AppBar(
         backgroundColor: _C.primary,
         elevation: 0,
@@ -130,8 +109,7 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
                 color: Colors.white.withValues(alpha: 0.18),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.eco_rounded,
-                  color: Colors.amber, size: 20),
+              child: const Icon(Icons.eco_rounded, color: Colors.amber, size: 20),
             ),
             const SizedBox(width: 10),
             const Text(
@@ -147,20 +125,17 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.menu_rounded,
-                color: Colors.white, size: 24),
+            icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 24),
             onPressed: () {},
           ),
           IconButton(
-            icon: const Icon(Icons.settings_rounded,
-                color: Colors.white, size: 22),
+            icon: const Icon(Icons.settings_rounded, color: Colors.white, size: 22),
             onPressed: () {},
           ),
           const SizedBox(width: 4),
         ],
       );
 
-  // ─── Body ─────────────────────────────────────────────────────
   Widget _buildBody() => SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
         child: Column(
@@ -192,7 +167,6 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
         ),
       );
 
-  // ─── Capture Card ─────────────────────────────────────────────
   Widget _buildCaptureCard() => Container(
         width: double.infinity,
         padding: const EdgeInsets.all(20),
@@ -245,8 +219,7 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
                         backgroundColor: _C.primary,
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: _R.md),
+                        shape: RoundedRectangleBorder(borderRadius: _R.md),
                       ),
                     ),
                   ),
@@ -269,10 +242,8 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
                         backgroundColor: _C.card,
                         foregroundColor: _C.cardForeground,
                         side: BorderSide(
-                            color: _C.border.withValues(alpha: 0.6),
-                            width: 1.5),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: _R.md),
+                            color: _C.border.withValues(alpha: 0.6), width: 1.5),
+                        shape: RoundedRectangleBorder(borderRadius: _R.md),
                       ),
                     ),
                   ),
@@ -283,7 +254,6 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
         ),
       );
 
-  // ─── Info Card (Multi-photo toggle) ──────────────────────────
   Widget _buildInfoCard() => GestureDetector(
         onTap: () {
           setState(() => _isMultiPhotoMode = !_isMultiPhotoMode);
@@ -295,8 +265,7 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
         },
         child: Container(
           width: double.infinity,
-          padding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
             color: _isMultiPhotoMode
                 ? _C.infoDot.withValues(alpha: 0.12)
@@ -329,9 +298,7 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
                       TextSpan(
                         text: 'Multi-photo support: ',
                         style: TextStyle(
-                          color: _isMultiPhotoMode
-                              ? _C.infoDot
-                              : _C.infoText,
+                          color: _isMultiPhotoMode ? _C.infoDot : _C.infoText,
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           height: 1.5,
@@ -342,9 +309,7 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
                             ? 'Enabled! Tap camera to scan multiple photos.'
                             : "Tap here to enable multi-photo mode for long bills!",
                         style: TextStyle(
-                          color: _isMultiPhotoMode
-                              ? _C.infoDot
-                              : _C.infoText,
+                          color: _isMultiPhotoMode ? _C.infoDot : _C.infoText,
                           fontSize: 13,
                           fontWeight: FontWeight.w400,
                           height: 1.5,
