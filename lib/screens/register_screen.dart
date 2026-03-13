@@ -162,11 +162,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Colors.grey),
+                                borderSide:
+                                const BorderSide(color: Colors.grey),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide:  const BorderSide(color: Color(0xFF26a69a)),
+                                borderSide:
+                                const BorderSide(color: Color(0xFF26a69a)),
                               ),
                             ),
                             validator: (value) {
@@ -190,7 +192,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xFF26a69a)),
+                                borderSide:
+                                const BorderSide(color: Colors.grey),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                const BorderSide(color: Color(0xFF26a69a)),
                               ),
                             ),
                             validator: (value) {
@@ -230,11 +238,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide:  const BorderSide(color: Colors.grey),
+                                borderSide:
+                                const BorderSide(color: Colors.grey),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xFF26a69a)),
+                                borderSide:
+                                const BorderSide(color: Color(0xFF26a69a)),
                               ),
                             ),
                             validator: (value) {
@@ -275,11 +285,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xFF26a69a)),
+                                borderSide:
+                                const BorderSide(color: Color(0xFF26a69a)),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xFF26a69a)),
+                                borderSide:
+                                const BorderSide(color: Color(0xFF26a69a)),
                               )
                             ),
                             validator: (value) {
@@ -327,23 +339,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                             ),
                           ),
-                          // Sign in button
-                          const SizedBox(height: 20,),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text("Already have an account? ", style: TextStyle(color: Colors.white)),
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('Sign In', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                              ),
-                            ],
-                          ),
-
                         ],
                       )
                     )
                   ),
+                  const SizedBox(height: 20),
+                  // Login Link
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Already have an account? ",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          'Sign In',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            // decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 40),
                 ],
               )
             )
