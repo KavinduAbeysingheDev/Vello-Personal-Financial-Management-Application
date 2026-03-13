@@ -192,7 +192,7 @@ Example:
 - If you truly cannot determine the total, return: NOT_FOUND
 
 === OCR TEXT ===
-$ocrText
+\$ocrText
 
 Respond with ONLY the number or NOT_FOUND. Nothing else.
 ''';
@@ -200,7 +200,7 @@ Respond with ONLY the number or NOT_FOUND. Nothing else.
       final response = await model.generateContent([Content.text(prompt)]);
       String? result = response.text?.trim();
 
-      debugPrint("Gemini Response: $result");
+      debugPrint("Gemini Response: \$result");
 
       if (result == null || result == 'NOT_FOUND') return "Amount not found";
 
@@ -210,7 +210,7 @@ Respond with ONLY the number or NOT_FOUND. Nothing else.
 
       return amount.toStringAsFixed(2);
     } catch (e) {
-      debugPrint("Gemini Error: $e");
+      debugPrint("Gemini Error: \$e");
       return _ocrFallback(ocrText);
     }
   }
