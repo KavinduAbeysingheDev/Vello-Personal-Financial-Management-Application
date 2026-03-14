@@ -15,6 +15,30 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   final _amountController = TextEditingController();
   final FinanceService _financeService = FinanceService();
 
+  String _selectedType = 'Expense';
+  String _selectedCategory = 'Food';
+  DateTime _selectedDate = DateTime.now();
+  bool _isLoading = false;
+
+  final List<String> _types = ['Expense', 'Income'];
+  final List<String> _expenseCategories = [
+    'Food',
+    'Transportation',
+    'Entertainment',
+    'Shopping',
+    'Bills',
+    'Healthcare',
+    'Education',
+    'Other',
+  ];
+  final List<String> _incomeCategories = [
+    'Salary',
+    'Freelance',
+    'Investment',
+    'Gift',
+    'Other',
+  ];
+
   @override
   void dispose() {
     _titleController.dispose();
