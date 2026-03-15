@@ -1,30 +1,24 @@
-import 'package:flutter/foundation.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:http/http.dart' as http;
 
 class BillScannerService {
   final ImagePicker _picker = ImagePicker();
+  final _textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+  static const String _groqApiKey = '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';
 
-  final _textRecognizer =
-      TextRecognizer(script: TextRecognitionScript.latin);
-
-  static const String _geminiApiKey = 'AIzaSyBp2LlglNcqIAtE1Uk1CFw9B8KjR4S3JDM';
-
-  // ─── Camera Scan (Single) ─────────────────────────────────────
   Future<String?> scanAndGetAmount() async {
     final XFile? image = await _picker.pickImage(
       source: ImageSource.camera,
       imageQuality: 100,
     );
     if (image == null) return null;
-
     return await _processImage(image.path, source: 'Camera');
   }
 
-  // ─── Camera Scan (Multi-photo) ────────────────────────────────
   Future<String?> scanMultiplePhotos(BuildContext context) async {
     List<String> imagePaths = [];
 
@@ -42,15 +36,9 @@ class BillScannerService {
       final addMore = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16)),
-          title: const Text(
-            'Photo Added!',
-            style: TextStyle(fontWeight: FontWeight.w700),
-          ),
-          content: Text(
-            '${imagePaths.length} photo(s) captured. Add another?',
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Photo Added!', style: TextStyle(fontWeight: FontWeight.w700)),
+          content: Text('${imagePaths.length} photo(s) captured. Add another?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
@@ -61,8 +49,7 @@ class BillScannerService {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF00674F),
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               child: const Text('Add Photo'),
             ),
@@ -74,69 +61,45 @@ class BillScannerService {
     }
 
     if (imagePaths.isEmpty) return null;
-
     return await _processMultipleImages(imagePaths);
   }
 
-  // ─── Gallery Upload ───────────────────────────────────────────
   Future<String?> scanFromGallery() async {
     final status = await Permission.photos.request();
-
     if (status.isPermanentlyDenied) {
       await openAppSettings();
       return null;
     }
-
-    if (status.isDenied) {
-      return null;
-    }
+    if (status.isDenied) return null;
 
     final XFile? image = await _picker.pickImage(
       source: ImageSource.gallery,
       imageQuality: 100,
     );
     if (image == null) return null;
-
     return await _processImage(image.path, source: 'Gallery');
   }
 
-  // ─── Process Multiple Images ──────────────────────────────────
   Future<String?> _processMultipleImages(List<String> imagePaths) async {
     String mergedText = '';
-
     for (int i = 0; i < imagePaths.length; i++) {
       final inputImage = InputImage.fromFilePath(imagePaths[i]);
-      final RecognizedText recognizedText =
-          await _textRecognizer.processImage(inputImage);
-
+      final RecognizedText recognizedText = await _textRecognizer.processImage(inputImage);
       String pageText = '';
       for (TextBlock block in recognizedText.blocks) {
         for (TextLine line in block.lines) {
           pageText += '${line.text}\n';
         }
       }
-
-      debugPrint("---------- OCR PAGE ${i + 1} ----------");
-      debugPrint(pageText);
-      debugPrint("---------------------------------------");
-
       mergedText += pageText;
     }
-
-    debugPrint("---------- MERGED OCR TEXT ----------");
-    debugPrint(mergedText);
-    debugPrint("-------------------------------------");
-
     if (mergedText.trim().isEmpty) return "Could not read bill";
-
-    return await _extractAmountWithGemini(mergedText);
+    return await _extractAmountWithDeepseek(mergedText);
   }
 
-  // ─── Shared Image Processing ──────────────────────────────────
   Future<String?> _processImage(String imagePath, {String source = ''}) async {
     final inputImage = InputImage.fromFilePath(imagePath);
-    final RecognizedText recognizedText =
-        await _textRecognizer.processImage(inputImage);
+    final RecognizedText recognizedText = await _textRecognizer.processImage(inputImage);
 
     String rawText = '';
     for (TextBlock block in recognizedText.blocks) {
@@ -150,77 +113,81 @@ class BillScannerService {
     debugPrint("----------------------------------------------");
 
     if (rawText.trim().isEmpty) return "Could not read bill";
-
-    return await _extractAmountWithGemini(rawText);
+    return await _extractAmountWithDeepseek(rawText);
   }
 
-  // ─── Gemini Extraction ────────────────────────────────────────
-  Future<String?> _extractAmountWithGemini(String ocrText) async {
+  Future<String?> _extractAmountWithDeepseek(String ocrText) async {
     try {
-      final model = GenerativeModel(
-        model: 'gemini-2.5-flash-lite',
-        apiKey: _geminiApiKey,
-      );
+      final response = await http.post(
+        Uri.parse('https://api.groq.com/openai/v1/chat/completions'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_groqApiKey',
+        },
+        body: jsonEncode({
+          'model': 'llama-3.3-70b-versatile',
+          'messages': [
+            {
+              'role': 'user',
+              'content': '''
+You are a Sri Lankan bill/receipt parser. Extract the final net payable amount.
 
-      final prompt = '''
-You are a Sri Lankan bill/receipt parser. Your job is to extract the final net payable amount.
+IMPORTANT: OCR text may have garbled Sinhala labels. Numbers will still be present.
 
-IMPORTANT: The OCR text may have MISSING or GARBLED Sinhala labels. Numbers will still be present.
+=== KEYWORDS TO LOOK FOR ===
+English: NET AMOUNT, NET TOTAL, TOTAL, GRAND TOTAL, AMOUNT DUE, PAYABLE
+Sinhala: මුළු මුදල, මුලු, එකතුව, ගෙවිය යුතු, සම්පූර්ණ මුදල
 
-=== STEP 1: Look for these keywords (English or Sinhala) ===
-English  : NET AMOUNT, NET TOTAL, TOTAL, GRAND TOTAL, AMOUNT DUE, PAYABLE
-Sinhala  : මුළු මුදල, මුලු, එකතුව, ගෙවිය යුතු, ගෙවිය යුතු මුදල, සේවිය යුතු මිල, සේවිය යුතු, සම්පූර්ණ මුදල
-
-=== STEP 2: If Sinhala labels are MISSING, use POSITION PATTERN ===
-Sri Lankan receipts follow this pattern:
+=== POSITION PATTERN (if keywords missing) ===
+Sri Lankan receipts:
   [item prices...]
-  TOTAL AMOUNT   <- the amount customer must pay (appears before a round number)
-  CASH GIVEN     <- round number like 500.00, 1000.00, 2000.00, 5000.00
-  BALANCE/CHANGE <- difference (cash given - total)
-
-Example:
-  Numbers seen: 593.36, 1000.00, 406.64
-  -> 1000.00 is CASH GIVEN (round number)
-  -> 406.64 is BALANCE
-  -> 593.36 is the TOTAL
+  TOTAL AMOUNT   <- amount customer pays
+  CASH GIVEN     <- round number (500, 1000, 2000, 5000)
+  BALANCE/CHANGE <- difference
 
 === RULES ===
 - Return ONLY the numeric value. Example: 593.36
-- Do NOT return the cash given amount or balance/change amount
-- Remove spaces inside numbers (e.g. 4,590. 00 -> 4590.00)
-- Remove commas (e.g. 1,000.00 -> 1000.00)
-- If you truly cannot determine the total, return: NOT_FOUND
+- Do NOT return cash given or balance/change
+- Remove commas (1,000.00 -> 1000.00)
+- If cannot determine: return NOT_FOUND
 
 === OCR TEXT ===
-\$ocrText
+$ocrText
 
-Respond with ONLY the number or NOT_FOUND. Nothing else.
-''';
+Respond with ONLY the number or NOT_FOUND.
+'''
+            }
+          ],
+          'max_tokens': 50,
+        }),
+      );
 
-      final response = await model.generateContent([Content.text(prompt)]);
-      String? result = response.text?.trim();
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        String? result = data['choices'][0]['message']['content']?.trim();
+        debugPrint("Groq Response: $result");
 
-      debugPrint("Gemini Response: \$result");
-
-      if (result == null || result == 'NOT_FOUND') return "Amount not found";
-
-      result = result.replaceAll(',', '').replaceAll(' ', '');
-      double? amount = double.tryParse(result);
-      if (amount == null || amount <= 0) return "Amount not found";
-
-      return amount.toStringAsFixed(2);
+        if (result == null || result == 'NOT_FOUND') return "Amount not found";
+        result = result.replaceAll(',', '').replaceAll(' ', '');
+        double? amount = double.tryParse(result);
+        if (amount == null || amount <= 0) return "Amount not found";
+        return amount.toStringAsFixed(2);
+      } else {
+        debugPrint("Groq Error: ${response.body}");
+        return _ocrFallback(ocrText);
+      }
     } catch (e) {
-      debugPrint("Gemini Error: \$e");
+      debugPrint("Groq Error: $e");
       return _ocrFallback(ocrText);
     }
   }
 
-  // ─── OCR Fallback ─────────────────────────────────────────────
   String _ocrFallback(String text) {
     RegExp amountRegExp = RegExp(r'\d{1,3}(?:,\s*\d{3})*(?:\.\s*\d{1,2})?');
     List<String> lines = text.split('\n');
     List<String> keywords = [
       'net amount', 'net total', 'grand total', 'total', 'payable',
+      'card -', 'card-', 'cash -', 'cash-',
       'මුළු', 'මුලු', 'එකතුව', 'ගෙවිය යුතු', 'සේවිය යුතු'
     ];
 
@@ -228,14 +195,12 @@ Respond with ONLY the number or NOT_FOUND. Nothing else.
       String lower = lines[i].toLowerCase();
       if (keywords.any((kw) => lower.contains(kw))) {
         for (var m in amountRegExp.allMatches(lines[i])) {
-          double? val = double.tryParse(
-              m.group(0)!.replaceAll(' ', '').replaceAll(',', ''));
+          double? val = double.tryParse(m.group(0)!.replaceAll(' ', '').replaceAll(',', ''));
           if (val != null && val > 10) return val.toStringAsFixed(2);
         }
         for (int j = i + 1; j < lines.length && j <= i + 3; j++) {
           for (var m in amountRegExp.allMatches(lines[j])) {
-            double? val = double.tryParse(
-                m.group(0)!.replaceAll(' ', '').replaceAll(',', ''));
+            double? val = double.tryParse(m.group(0)!.replaceAll(' ', '').replaceAll(',', ''));
             if (val != null && val > 10) return val.toStringAsFixed(2);
           }
         }
@@ -245,30 +210,22 @@ Respond with ONLY the number or NOT_FOUND. Nothing else.
     List<double> allAmounts = [];
     for (String line in lines) {
       for (var m in amountRegExp.allMatches(line)) {
-        double? val = double.tryParse(
-            m.group(0)!.replaceAll(' ', '').replaceAll(',', ''));
+        double? val = double.tryParse(m.group(0)!.replaceAll(' ', '').replaceAll(',', ''));
         if (val != null && val > 10) allAmounts.add(val);
       }
     }
 
-    List<double> roundNumbers =
-        allAmounts.where((v) => v % 100 == 0 && v >= 100).toList();
-
+    List<double> roundNumbers = allAmounts.where((v) => v % 100 == 0 && v >= 100).toList();
     if (roundNumbers.isNotEmpty && allAmounts.length >= 2) {
       double cashGiven = roundNumbers.reduce((a, b) => a > b ? a : b);
       int idx = allAmounts.lastIndexOf(cashGiven);
-      if (idx > 0) {
-        return allAmounts[idx - 1].toStringAsFixed(2);
-      }
+      if (idx > 0) return allAmounts[idx - 1].toStringAsFixed(2);
     }
 
-    double largest = allAmounts.isNotEmpty
-        ? allAmounts.reduce((a, b) => a > b ? a : b)
-        : 0;
+    double largest = allAmounts.isNotEmpty ? allAmounts.reduce((a, b) => a > b ? a : b) : 0;
     return largest > 0 ? largest.toStringAsFixed(2) : "Amount not found";
   }
 
-  // ─── Dispose ──────────────────────────────────────────────────
   void dispose() {
     _textRecognizer.close();
   }

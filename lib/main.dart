@@ -37,9 +37,7 @@ class _MainScreenState extends State<MainScreen> {
 
   late final List<Widget> _pages = [
     const PlaceholderPage(label: 'Home'),
-    BillScannerScreen(
-      onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
-    ),
+    const BillScannerScreen(),
     const PlaceholderPage(label: 'Events'),
     const PlaceholderPage(label: 'AI'),
   ];
@@ -50,14 +48,14 @@ class _MainScreenState extends State<MainScreen> {
       key: _scaffoldKey,
       drawer: _buildDrawer(context),
       body: _pages[_currentIndex],
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: _currentIndex == 1 ? null : FloatingActionButton(
         onPressed: () {},
         backgroundColor: const Color(0xFF3B5BDB),
         shape: const CircleBorder(),
         child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
+      bottomNavigationBar: _currentIndex == 1 ? null : BottomAppBar(
         color: Colors.white,
         elevation: 8,
         shape: const CircularNotchedRectangle(),
