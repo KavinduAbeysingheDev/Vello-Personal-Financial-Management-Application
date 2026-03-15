@@ -17,6 +17,16 @@ dependencies:
   google_generative_ai: ^0.4.7
   permission_handler: ^11.3.1
 
+  # Gmail
+  google_sign_in: ^6.2.1
+  googleapis: ^13.2.0
+  http: ^1.2.0
+
+  # Firebase
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
