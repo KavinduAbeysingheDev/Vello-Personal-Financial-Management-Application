@@ -282,6 +282,39 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 ),
 
                 const SizedBox(height: 20),
+
+                // Date Field
+                const Text(
+                  'Date',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: () => _selectDate(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${_selectedDate.month}/${_selectedDate.day}/${_selectedDate.year}',
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        const Icon(Icons.calendar_today, color: Colors.grey),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 40),
               ],
             ),
           ),
