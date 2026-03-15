@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'features/bill_scanner/bill_scanner_screen.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -107,15 +113,66 @@ class _MainScreenState extends State<MainScreen> {
 
   Widget _buildDrawer(BuildContext context) {
     final items = [
-      {'icon': Icons.list_alt_rounded, 'title': 'All Transactions', 'sub': 'View transaction history'},
-      {'icon': Icons.pie_chart_rounded, 'title': 'Budget Overview', 'sub': 'Track your budgets'},
-      {'icon': Icons.calendar_month_rounded, 'title': 'Weekly Planner', 'sub': 'AI-powered budget planning'},
-      {'icon': Icons.trending_up_rounded, 'title': 'Statistics', 'sub': 'View spending analytics'},
-      {'icon': Icons.track_changes_rounded, 'title': 'Savings Goals', 'sub': 'Set and track savings goals'},
-      {'icon': Icons.credit_card_rounded, 'title': 'Subscription Manager', 'sub': 'Manage and cancel subscriptions'},
-      {'icon': Icons.warning_amber_rounded, 'title': 'Debt Tracker', 'sub': 'Track and manage debt'},
-      {'icon': Icons.mic_rounded, 'title': 'Voice Expense', 'sub': 'Add expenses using voice'},
-      {'icon': Icons.favorite_border_rounded, 'title': 'Financial Health', 'sub': 'Assess your financial health'},
+      {
+        'icon': Icons.list_alt_rounded,
+        'title': 'All Transactions',
+        'sub': 'View transaction history',
+        'screen': null,
+      },
+      {
+        'icon': Icons.pie_chart_rounded,
+        'title': 'Budget Overview',
+        'sub': 'Track your budgets',
+        'screen': null,
+      },
+      {
+        'icon': Icons.calendar_month_rounded,
+        'title': 'Weekly Planner',
+        'sub': 'AI-powered budget planning',
+        'screen': null,
+      },
+      {
+        'icon': Icons.trending_up_rounded,
+        'title': 'Statistics',
+        'sub': 'View spending analytics',
+        'screen': null,
+      },
+      {
+        'icon': Icons.track_changes_rounded,
+        'title': 'Savings Goals',
+        'sub': 'Set and track savings goals',
+        'screen': null,
+      },
+      {
+        'icon': Icons.credit_card_rounded,
+        'title': 'Subscription Manager',
+        'sub': 'Manage and cancel subscriptions',
+        'screen': null,
+      },
+      {
+        'icon': Icons.warning_amber_rounded,
+        'title': 'Debt Tracker',
+        'sub': 'Track and manage debt',
+        'screen': null,
+      },
+      {
+        'icon': Icons.mic_rounded,
+        'title': 'Voice Expense',
+        'sub': 'Add expenses using voice',
+        'screen': null,
+      },
+      {
+        'icon': Icons.favorite_border_rounded,
+        'title': 'Financial Health',
+        'sub': 'Assess your financial health',
+        'screen': null,
+      },
+      {
+        'icon': Icons.email_rounded,
+        'title': 'Email Bills',
+        'sub': 'Auto-detect bills from Gmail',
+        'screen': null,
+      },
     ];
 
     return Drawer(
@@ -163,7 +220,17 @@ class _MainScreenState extends State<MainScreen> {
                         color: Color(0xFF6B7280),
                       ),
                     ),
-                    onTap: () => Navigator.pop(context),
+                    onTap: () {
+                      Navigator.pop(context);
+                      if (item['screen'] != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => item['screen'] as Widget,
+                          ),
+                        );
+                      }
+                    },
                   );
                 },
               ),
@@ -211,14 +278,61 @@ class SettingsPage extends StatelessWidget {
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: const Center(
-        child: Text(
-          'Settings',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF00674F),
-          ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Auto Bill Detection',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF111111),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0x1A00674F)),
+              ),
+              child: Column(
+                children: [
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.email_rounded,
+                        color: Color(0xFF00674F)),
+                    title: const Text(
+                      'Email Bills',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: const Text('Auto-detect bills from Gmail'),
+                    trailing: const Icon(Icons.chevron_right_rounded,
+                        color: Color(0xFF6B7280)),
+                    onTap: () {},
+                  ),
+                  const Divider(),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.sms_rounded,
+                        color: Color(0xFF00674F)),
+                    title: const Text(
+                      'SMS Bills',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: const Text('Auto-detect bills from messages'),
+                    trailing: const Icon(Icons.chevron_right_rounded,
+                        color: Color(0xFF6B7280)),
+                    onTap: () {},
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
