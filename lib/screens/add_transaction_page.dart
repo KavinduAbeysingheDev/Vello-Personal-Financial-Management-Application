@@ -133,6 +133,43 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   'Add a new income or expense transaction to your account.',
                   style: TextStyle(color: Colors.grey),
                 ),
+                const SizedBox(height: 24),
+
+                // Type Selection
+                const Text(
+                  'Type',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      isExpanded: true,
+                      value: _selectedType,
+                      items: _types.map((String type) {
+                        return DropdownMenuItem<String>(
+                          value: type,
+                          child: Text(type),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedType = newValue!;
+                          _selectedCategory = _categories.first;
+                        });
+                      },
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
