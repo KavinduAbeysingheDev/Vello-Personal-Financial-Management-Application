@@ -21,9 +21,9 @@ The application helps users track income and expenses, manage budgets, and gain 
 
 ## 🛠️ Technologies Used
 
-- **Frontend**: HTML, CSS, JavaScript  
+- **Frontend**: Flutter, Dart language  
 - **Backend**: (e.g., Java / Node.js / Python – update as applicable)  
-- **Database**: MySQL / MongoDB / SQLite  
+- **Database**: Firebase  
 - **Version Control**: Git & GitHub  
 - **IDE**: Visual Studio Code  
 
