@@ -36,3 +36,29 @@ class FinanceService {
       rethrow;
     }
   }
+
+  // Update budget spent amount
+  Future<void> _updateBudgetSpent(
+      String userId, String category, double amount) async {
+    try {
+      final now = DateTime.now();
+      final currentMonth = DateTime(now.year, now.month, 1);
+
+      final budgetQuery = await _firestore
+          .collection('budgets')
+          .where('userId', isEqualTo: userId)
+          .where('category', isEqualTo: category)
+          .where('month', isEqualTo: Timestamp.fromDate(currentMonth))
+          .get();
+
+      if (budgetQuery.docs.isNotEmpty) {
+        final budgetDoc = budgetQuery.docs.first;
+        final currentSpent = budgetDoc.data()['spent'] ?? 0.0;
+        await budgetDoc.reference.update({
+          'spent': currentSpent + amount,
+        });
+      }
+    } catch (e) {
+      print('Error updating budget: $e');
+    }
+  }
