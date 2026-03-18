@@ -176,3 +176,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
 
           const SizedBox(height: 24),
+
+          // User details card
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  _buildInfoTile(
+                    icon: Icons.person_outline,
+                    label: 'Full Name',
+                    value: _userModel?.name ?? '—',
+                  ),
+                  _buildDivider(),
+                  _buildInfoTile(
+                    icon: Icons.email_outlined,
+                    label: 'Email Address',
+                    value: _userModel?.email ??
+                        firebaseUser?.email ??
+                        '—',
+                  ),
+                  _buildDivider(),
+                  _buildInfoTile(
+                    icon: Icons.calendar_today_outlined,
+                    label: 'Member Since',
+                    value: _userModel != null
+                        ? _formatDate(_userModel!.createdAt)
+                        : '—',
+                  ),
+                  _buildDivider(),
+                  _buildInfoTile(
+                    icon: Icons.fingerprint,
+                    label: 'User ID',
+                    value: firebaseUser?.uid != null
+                        ? '${firebaseUser!.uid.substring(0, 8)}...'
+                        : '—',
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 24),
