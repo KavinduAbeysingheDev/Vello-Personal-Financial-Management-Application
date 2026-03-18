@@ -1,5 +1,3 @@
-// saving_goals_backend.dart
-
 import 'package:flutter/material.dart';
 
 class SavingsGoal {
@@ -8,7 +6,7 @@ class SavingsGoal {
   final String priority;
   final double saved;
   final double target;
-  final IconData icon;
+  final dynamic icon; // Can be IconData or String (emoji)
   final Color iconColor;
   final Color priorityColor;
   final Color priorityTextColor;
@@ -23,11 +21,11 @@ class SavingsGoal {
     required this.saved,
     required this.target,
     required this.icon,
-    required this.iconColor,
-    required this.priorityColor,
-    required this.priorityTextColor,
-    required this.subtitle,
-    required this.progressColor,
+    this.iconColor = const Color(0xFF3B82F6),
+    this.priorityColor = const Color(0xFFFEE2E2),
+    this.priorityTextColor = const Color(0xFFEF4444),
+    this.subtitle = '',
+    this.progressColor = const Color(0xFF10B981),
     this.isOverdue = false,
   });
 
@@ -35,16 +33,21 @@ class SavingsGoal {
   double get progress => target > 0 ? saved / target : 0;
 }
 
-class SavingsGoalService {
+class SavingsGoalService extends ChangeNotifier {
+  // Static Instance for easy access without provider
+  static final SavingsGoalService _instance = SavingsGoalService._internal();
+  factory SavingsGoalService() => _instance;
+  SavingsGoalService._internal();
+
   final List<SavingsGoal> _goals = [
     SavingsGoal(
       id: '1',
       icon: Icons.shield,
-      iconColor: const Color(0xFF3B82F6), // Blue
+      iconColor: const Color(0xFF3B82F6),
       title: 'Emergency Fund',
       priority: 'high',
-      priorityColor: const Color(0xFFFEE2E2), // Light red
-      priorityTextColor: const Color(0xFFEF4444), // Red
+      priorityColor: const Color(0xFFFEE2E2),
+      priorityTextColor: const Color(0xFFEF4444),
       subtitle: '79 days left',
       saved: 6500.00,
       target: 10000.00,
@@ -53,11 +56,11 @@ class SavingsGoalService {
     SavingsGoal(
       id: '2',
       icon: Icons.flight,
-      iconColor: const Color(0xFF6B7280), // Gray
+      iconColor: const Color(0xFF6B7280),
       title: 'Vacation to Japan',
       priority: 'medium',
-      priorityColor: const Color(0xFFFEF3C7), // Light yellow
-      priorityTextColor: const Color(0xFFF59E0B), // Orange/yellow
+      priorityColor: const Color(0xFFFEF3C7),
+      priorityTextColor: const Color(0xFFF59E0B),
       subtitle: 'Overdue',
       saved: 2100.00,
       target: 5000.00,
@@ -67,11 +70,11 @@ class SavingsGoalService {
     SavingsGoal(
       id: '3',
       icon: Icons.laptop_mac,
-      iconColor: const Color(0xFF3B82F6), // Blue
+      iconColor: const Color(0xFF3B82F6),
       title: 'New Laptop',
       priority: 'low',
-      priorityColor: const Color(0xFFD1FAE5), // Light green
-      priorityTextColor: const Color(0xFF10B981), // Green
+      priorityColor: const Color(0xFFD1FAE5),
+      priorityTextColor: const Color(0xFF10B981),
       subtitle: 'Overdue',
       saved: 1450.00,
       target: 2000.00,
@@ -80,20 +83,15 @@ class SavingsGoalService {
     ),
   ];
 
-  List<SavingsGoal> getGoals() {
-    return _goals;
-  }
+  List<SavingsGoal> get goals => List.unmodifiable(_goals);
 
-  double getTotalSaved() {
-    return _goals.fold(0.0, (sum, goal) => sum + goal.saved);
-  }
-
-  double getTotalTarget() {
-    return _goals.fold(0.0, (sum, goal) => sum + goal.target);
-  }
+  double get totalSaved => _goals.fold(0.0, (sum, goal) => sum + goal.saved);
+  double get totalTarget => _goals.fold(0.0, (sum, goal) => sum + goal.target);
+  double get overallProgress => totalTarget > 0 ? totalSaved / totalTarget : 0;
 
   void addGoal(SavingsGoal goal) {
     _goals.insert(0, goal);
+    notifyListeners();
   }
 
   void addFunds(String id, double amount) {
@@ -114,6 +112,7 @@ class SavingsGoalService {
         progressColor: goal.progressColor,
         isOverdue: goal.isOverdue,
       );
+      notifyListeners();
     }
   }
 }
