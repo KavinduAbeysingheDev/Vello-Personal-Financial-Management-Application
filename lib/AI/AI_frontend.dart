@@ -1,5 +1,23 @@
 import 'package:flutter/material.dart';
 
+// -----------------------------------------------------------------------------
+// AI Chat Models & Mock Logic (Self-contained)
+// -----------------------------------------------------------------------------
+
+enum MessageType { user, ai }
+
+class ChatMessage {
+  final String text;
+  final MessageType type;
+  final DateTime timestamp;
+
+  ChatMessage({
+    required this.text,
+    required this.type,
+    required this.timestamp,
+  });
+}
+
 class AIFinanceScreen extends StatefulWidget {
   const AIFinanceScreen({super.key});
 
@@ -10,26 +28,80 @@ class AIFinanceScreen extends StatefulWidget {
 class _AIFinanceScreenState extends State<AIFinanceScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final List<ChatMessage> _messages = [];
+  bool _isTyping = false;
 
-  final List<Map<String, dynamic>> _messages = [
-    {
-      'isUser': false,
-      'text':
-          "Hello! I'm your Vello AI assistant. I can help you with budgeting, spending analysis, and financial advice. How can I assist you today?",
-      'time': '09:41 AM',
-    },
-    {
-      'isUser': true,
-      'text': 'Can you analyze my spending for this month?',
-      'time': '09:42 AM',
-    },
-    {
-      'isUser': false,
-      'text':
-          "I've analyzed your transactions. You've spent \$1,240 so far, which is 15% more than last month at this time. Most of it went to 'Dining Out'.",
-      'time': '09:42 AM',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Initial welcome messages
+    _messages.addAll([
+      ChatMessage(
+        text: "Hi there! I'm Vello AI. How can I help you today?",
+        type: MessageType.ai,
+        timestamp: DateTime.now(),
+      ),
+      ChatMessage(
+        text: "You can ask me about your spending, budget tips, or how to save more!",
+        type: MessageType.ai,
+        timestamp: DateTime.now(),
+      ),
+    ]);
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  Future<void> _handleSendMessage(String text) async {
+    if (text.trim().isEmpty) return;
+
+    setState(() {
+      _messages.add(ChatMessage(
+        text: text,
+        type: MessageType.user,
+        timestamp: DateTime.now(),
+      ));
+      _isTyping = true;
+    });
+
+    _messageController.clear();
+    _scrollToBottom();
+
+    // Mock AI response logic
+    await Future.delayed(const Duration(seconds: 1));
+
+    String aiResponseText = "That's interesting! Could you tell me more about it?";
+    final input = text.toLowerCase();
+
+    if (input.contains("budget")) {
+      aiResponseText = "Creating a budget is a great first step. I recommend the 50/30/20 rule: 50% for needs, 30% for wants, and 20% for savings.";
+    } else if (input.contains("save") || input.contains("savings")) {
+      aiResponseText = "To save more, try setting up automatic transfers to your savings account right after you get paid!";
+    } else if (input.contains("tips")) {
+      aiResponseText = "My top tip: track every single expense for a month. You'll be surprised where the small leaks are!";
+    }
+
+    if (mounted) {
+      setState(() {
+        _isTyping = false;
+        _messages.add(ChatMessage(
+          text: aiResponseText,
+          type: MessageType.ai,
+          timestamp: DateTime.now(),
+        ));
+      });
+      _scrollToBottom();
+    }
+  }
 
   @override
   void dispose() {
@@ -41,204 +113,157 @@ class _AIFinanceScreenState extends State<AIFinanceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB), // Clean off-white bg
+      backgroundColor: const Color(0xFFF9FAFB),
       body: Column(
         children: [
-          // Premium Header with Gradient
-          _buildHeader(context),
-
+          _buildHeader(),
           Expanded(
-            child: Stack(
-              children: [
-                ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 120),
-                  itemCount: _messages.length,
-                  itemBuilder: (context, index) {
-                    final msg = _messages[index];
-                    return _buildChatMessage(
-                      isUser: msg['isUser'],
-                      text: msg['text'],
-                      time: msg['time'],
-                    );
-                  },
-                ),
-
-                // Floating Bottom Input Section
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: _buildBottomSection(),
-                ),
-              ],
+            child: ListView.builder(
+              controller: _scrollController,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              itemCount: _messages.length + (_isTyping ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == _messages.length) {
+                  return _buildTypingIndicator();
+                }
+                final message = _messages[index];
+                return _buildChatMessage(message);
+              },
             ),
           ),
+          _buildBottomSection(),
         ],
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader() {
     return Container(
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 12,
-        bottom: 20,
-        left: 20,
-        right: 20,
-      ),
+      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 12, left: 20, right: 20, bottom: 20),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF065F46), Color(0xFF10B981)],
+          colors: [Color(0xFF065F46), Color(0xFF10B981)], // Dark teal gradient
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 10,
-            offset: Offset(0, 2),
-          ),
-        ],
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Custom Vello Logo Style
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(
-              Icons.auto_awesome,
-              color: Colors.white,
-              size: 20,
-            ),
+          const Text(
+            "Vello AI",
+            style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
             children: [
-              const Text(
-                'Vello AI',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              Row(
-                children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF34D399),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Text(
-                    'Finance Assistant • Online',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
+              IconButton(onPressed: () {}, icon: const Icon(Icons.menu, color: Colors.white)),
+              IconButton(onPressed: () {}, icon: const Icon(Icons.settings_outlined, color: Colors.white)),
             ],
-          ),
-          const Spacer(),
-          IconButton(
-            icon: const Icon(
-              Icons.settings_outlined,
-              color: Colors.white,
-              size: 22,
-            ),
-            onPressed: () {},
           ),
         ],
       ),
     );
   }
 
-  Widget _buildChatMessage({
-    required bool isUser,
-    required String text,
-    required String time,
-  }) {
+  Widget _buildChatMessage(ChatMessage message) {
+    final isUser = message.type == MessageType.user;
+    final timeStr = "${message.timestamp.hour.toString().padLeft(2, '0')}:${message.timestamp.minute.toString().padLeft(2, '0')}";
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Row(
-        mainAxisAlignment: isUser
-            ? MainAxisAlignment.end
-            : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (!isUser) ...[
-            Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                color: Color(0xFFECFDF5),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.smart_toy_outlined,
-                color: Color(0xFF059669),
-                size: 16,
-              ),
-            ),
-          ],
+          if (!isUser) _buildAvatar(MessageType.ai),
+          const SizedBox(width: 10),
           Flexible(
             child: Column(
-              crossAxisAlignment: isUser
-                  ? CrossAxisAlignment.end
-                  : CrossAxisAlignment.start,
+              crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: isUser ? const Color(0xFF059669) : Colors.white,
+                    color: isUser ? const Color(0xFF065F46) : Colors.white,
                     borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(20),
-                      topRight: const Radius.circular(20),
-                      bottomLeft: Radius.circular(isUser ? 20 : 4),
-                      bottomRight: Radius.circular(isUser ? 4 : 20),
+                      topLeft: const Radius.circular(18),
+                      topRight: const Radius.circular(18),
+                      bottomLeft: Radius.circular(isUser ? 18 : 0),
+                      bottomRight: Radius.circular(isUser ? 0 : 18),
                     ),
                     boxShadow: [
-                      if (!isUser)
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
                     ],
                   ),
                   child: Text(
-                    text,
+                    message.text,
                     style: TextStyle(
-                      fontSize: 14,
                       color: isUser ? Colors.white : const Color(0xFF1F2937),
-                      height: 1.5,
+                      height: 1.4,
+                      fontSize: 14,
                     ),
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 5),
                 Text(
-                  time,
-                  style: const TextStyle(
-                    fontSize: 10,
-                    color: Color(0xFF9CA3AF),
-                  ),
+                  timeStr,
+                  style: const TextStyle(color: Colors.grey, fontSize: 10),
                 ),
               ],
             ),
           ),
-          if (isUser)
-            const SizedBox(width: 32), // Space for user avatar if needed
+          const SizedBox(width: 10),
+          if (isUser) _buildAvatar(MessageType.user),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAvatar(MessageType type) {
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        color: type == MessageType.user ? const Color(0xFFE5E7EB) : const Color(0xFFD1FAE5),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(
+        type == MessageType.user ? Icons.person_outline : Icons.smart_toy_outlined,
+        size: 18,
+        color: type == MessageType.user ? Colors.grey : const Color(0xFF059669),
+      ),
+    );
+  }
+
+  Widget _buildTypingIndicator() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Row(
+        children: [
+          _buildAvatar(MessageType.ai),
+          const SizedBox(width: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: const Row(
+              children: [
+                SizedBox(
+                  width: 12,
+                  height: 12,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF059669)),
+                ),
+                SizedBox(width: 10),
+                Text("Thinking...", style: TextStyle(color: Colors.grey, fontSize: 12)),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -246,77 +271,61 @@ class _AIFinanceScreenState extends State<AIFinanceScreen> {
 
   Widget _buildBottomSection() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB).withOpacity(0.95),
-        gradient: LinearGradient(
-          colors: [Colors.white.withOpacity(0), Colors.white],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          stops: const [0, 0.3],
-        ),
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 25),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 20,
+            offset: Offset(0, -5),
+          ),
+        ],
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          // Suggestion Chips
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _buildSuggestionChip('Analyze spending'),
-                _buildSuggestionChip('Budget tips'),
-                _buildSuggestionChip('Savings summary'),
-                _buildSuggestionChip('Investment help'),
+                _buildSuggestionChip("Analyze spending"),
+                _buildSuggestionChip("Budget tips"),
+                _buildSuggestionChip("Weekly summary"),
+                _buildSuggestionChip("How to save?"),
               ],
             ),
           ),
-          const SizedBox(height: 12),
-          // Input Bar
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 15,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: const InputDecoration(
-                      hintText: 'Ask me anything...',
-                      hintStyle: TextStyle(
-                        color: Color(0xFF9CA3AF),
-                        fontSize: 13,
-                      ),
-                      border: InputBorder.none,
+          const SizedBox(height: 15),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _messageController,
+                  onSubmitted: _handleSendMessage,
+                  decoration: InputDecoration(
+                    hintText: "Ask me anything about your finances...",
+                    hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                    filled: true,
+                    fillColor: const Color(0xFFF3F4F6),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: BorderSide.none,
                     ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   ),
                 ),
-                Container(
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF059669),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.send_rounded,
-                    color: Colors.white,
-                    size: 18,
-                  ),
+              ),
+              const SizedBox(width: 12),
+              GestureDetector(
+                onTap: () => _handleSendMessage(_messageController.text),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle),
+                  child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
@@ -324,21 +333,20 @@ class _AIFinanceScreenState extends State<AIFinanceScreen> {
   }
 
   Widget _buildSuggestionChip(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: ActionChip(
-        label: Text(
-          text,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Color(0xFF065F46),
-            fontWeight: FontWeight.w600,
-          ),
+    return GestureDetector(
+      onTap: () => _handleSendMessage(text),
+      child: Container(
+        margin: const EdgeInsets.only(right: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFFECFDF5),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFD1FAE5)),
         ),
-        backgroundColor: const Color(0xFFECFDF5),
-        side: const BorderSide(color: Color(0xFFD1FAE5)),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        onPressed: () {},
+        child: Text(
+          text,
+          style: const TextStyle(color: Color(0xFF065F46), fontSize: 12, fontWeight: FontWeight.w600),
+        ),
       ),
     );
   }
