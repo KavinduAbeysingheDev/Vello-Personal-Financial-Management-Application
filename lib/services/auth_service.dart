@@ -85,3 +85,12 @@ class AuthService {
 
     await batch.commit();
   }
+
+  // Sign out
+  Future<void> signOut() async {
+    try {
+      await _auth.signOut();
+    } catch (e) {
+      rethrow;
+    }
+  }
