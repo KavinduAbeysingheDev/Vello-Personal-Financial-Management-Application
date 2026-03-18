@@ -1,16 +1,16 @@
-// lib/Statistic/Statistic_backend.dart
-
 import 'package:flutter/material.dart';
 
 class StatisticSlice {
   final String name;
   final double percentage;
   final Color color;
+  final double amount;
 
   StatisticSlice({
     required this.name,
     required this.percentage,
     required this.color,
+    required this.amount,
   });
 }
 
@@ -26,32 +26,70 @@ class StatisticBar {
   });
 }
 
-class StatisticService {
-  // Pie chart slice colours
-  static const Color colorFood = Color(0xFF10B981);
-  static const Color colorBills = Color(0xFF065F46);
-  static const Color colorTransport = Color(0xFF34D399);
-  static const Color colorEntertainment = Color(0xFFD1FAE5);
+class StatisticService extends ChangeNotifier {
+  // Singleton pattern for shared access
+  static final StatisticService instance = StatisticService._internal();
+  factory StatisticService() => instance;
+  StatisticService._internal();
 
-  // Bar chart bar colours
-  static const Color colorBudget = Color(0xFFBBF7D0);
-  static const Color colorSpent = Color(0xFF065F46);
+  // Shared Data State (Can be updated from Home or anywhere)
+  // These categories match the Vello Figma design
+  Map<String, List<StatisticSlice>> _categorySlices = {
+    "Weekly": [
+      StatisticSlice(name: "Food", percentage: 40, color: const Color(0xFF0D9488), amount: 450),
+      StatisticSlice(name: "Bills", percentage: 25, color: const Color(0xFF10B981), amount: 300),
+      StatisticSlice(name: "Transportation", percentage: 20, color: const Color(0xFF34D399), amount: 200),
+      StatisticSlice(name: "Others", percentage: 15, color: const Color(0xFF6EE7B7), amount: 150),
+    ],
+    "Monthly": [
+      StatisticSlice(name: "Food", percentage: 35, color: const Color(0xFF0D9488), amount: 1200),
+      StatisticSlice(name: "Bills", percentage: 30, color: const Color(0xFF10B981), amount: 1000),
+      StatisticSlice(name: "Transportation", percentage: 20, color: const Color(0xFF34D399), amount: 700),
+      StatisticSlice(name: "Others", percentage: 15, color: const Color(0xFF6EE7B7), amount: 500),
+    ]
+  };
 
-  List<StatisticSlice> getSlices() {
-    return [
-      StatisticSlice(name: 'Food', percentage: 59, color: colorFood),
-      StatisticSlice(name: 'Bills', percentage: 22, color: colorBills),
-      StatisticSlice(name: 'Transportation', percentage: 15, color: colorTransport),
-      StatisticSlice(name: 'Entertainment', percentage: 4, color: colorEntertainment),
-    ];
+  Map<String, List<StatisticBar>> _barData = {
+    "Weekly": [
+      StatisticBar(label: "Mon", budget: 400, spent: 300),
+      StatisticBar(label: "Tue", budget: 400, spent: 450),
+      StatisticBar(label: "Wed", budget: 400, spent: 200),
+      StatisticBar(label: "Thu", budget: 400, spent: 350),
+    ],
+    "Monthly": [
+      StatisticBar(label: "Week 1", budget: 2000, spent: 1800),
+      StatisticBar(label: "Week 2", budget: 2000, spent: 2200),
+      StatisticBar(label: "Week 3", budget: 2000, spent: 1500),
+      StatisticBar(label: "Week 4", budget: 2000, spent: 1900),
+    ]
+  };
+
+  List<StatisticSlice> getSlices(String period) => _categorySlices[period] ?? [];
+  List<StatisticBar> getBars(String period) => _barData[period] ?? [];
+
+  // This method allows the Home Page (or any other part) to update the budget/spent values
+  void updateCategoryData(String period, String categoryName, double newSpent) {
+    if (_categorySlices.containsKey(period)) {
+      final list = _categorySlices[period]!;
+      int idx = list.indexWhere((s) => s.name == categoryName);
+      if (idx != -1) {
+        // In a real app, logic to recalculate percentage based on total would go here
+        final old = list[idx];
+        list[idx] = StatisticSlice(
+          name: old.name,
+          percentage: old.percentage, // Keeping percentage fixed for mock simplification
+          color: old.color,
+          amount: newSpent,
+        );
+        notifyListeners(); // NOTIFY THE UI TO REBUILD IMMEDIATELY
+      }
+    }
   }
 
-  List<StatisticBar> getBars() {
-    return [
-      StatisticBar(label: 'Food', budget: 480, spent: 235),
-      StatisticBar(label: 'Transportation', budget: 175, spent: 60),
-      StatisticBar(label: 'Entertainment', budget: 100, spent: 15),
-      StatisticBar(label: 'Shopping', budget: 300, spent: 0),
-    ];
+  // Update whole period data
+  void setPeriodData(String period, List<StatisticSlice> slices, List<StatisticBar> bars) {
+    _categorySlices[period] = slices;
+    _barData[period] = bars;
+    notifyListeners();
   }
 }
