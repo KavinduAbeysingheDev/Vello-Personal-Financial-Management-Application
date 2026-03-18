@@ -95,4 +95,31 @@ class FinanceService {
       docs.sort((a, b) => b.date.compareTo(a.date));
       return docs;
     });
+
+  }
+
+  // Get transactions for the last N weeks (for budget planner)
+  Future<List<TransactionModel>> getTransactionsForLastNWeeks(
+      String userId,
+      int weeks,
+      ) async {
+    final startDate = DateTime.now().subtract(Duration(days: weeks * 7));
+    final snapshot = await _firestore
+        .collection('transactions')
+        .where('userId', isEqualTo: userId)
+        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+        .get();
+    final docs =
+    snapshot.docs.map((doc) => TransactionModel.fromFirestore(doc)).toList();
+    docs.sort((a, b) => a.date.compareTo(b.date));
+    return docs;
+  }
+
+  // Delete a transaction
+  Future<void> deleteTransaction(String transactionId) async {
+    try {
+      await _firestore.collection('transactions').doc(transactionId).delete();
+    } catch (e) {
+      rethrow;
+    }
   }
