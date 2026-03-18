@@ -380,3 +380,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
+
+  Widget _buildDivider() {
+    return Divider(
+      height: 1,
+      thickness: 1,
+      color: Colors.grey[100],
+      indent: 72,
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
+  }
+
+  Future<void> _handleChangePassword() async {
+    final email = _userModel?.email?.trim().isNotEmpty == true
+        ? _userModel!.email.trim()
+        : FirebaseAuth.instance.currentUser?.email;
+
+    if (email == null || email.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No email address found for this account.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
