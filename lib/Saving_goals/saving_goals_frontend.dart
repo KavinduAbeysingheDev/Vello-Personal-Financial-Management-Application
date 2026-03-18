@@ -6,8 +6,20 @@ import 'package:flutter/material.dart';
 import 'saving_goals_painter.dart';
 import 'saving_goals_backend.dart';
 
-class SavingsGoalsScreen extends StatelessWidget {
+class SavingsGoalsScreen extends StatefulWidget {
   const SavingsGoalsScreen({super.key});
+
+  @override
+  State<SavingsGoalsScreen> createState() => _SavingsGoalsScreenState();
+}
+
+class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Load saved goals from SharedPreferences when screen opens
+    SavingsGoalService().loadGoals();
+  }
 
   @override
   Widget build(BuildContext context) {
