@@ -29,12 +29,14 @@ class StatisticBar {
 class StatisticService extends ChangeNotifier {
   // Singleton pattern for shared access
   static final StatisticService instance = StatisticService._internal();
+
   factory StatisticService() => instance;
+
   StatisticService._internal();
 
   // Shared Data State (Can be updated from Home or anywhere)
   // These categories match the Vello Figma design
-  Map<String, List<StatisticSlice>> _categorySlices = {
+  final Map<String, List<StatisticSlice>> _categorySlices = {
     "Weekly": [
       StatisticSlice(name: "Food", percentage: 40, color: const Color(0xFF0D9488), amount: 450),
       StatisticSlice(name: "Bills", percentage: 25, color: const Color(0xFF10B981), amount: 300),
@@ -49,7 +51,7 @@ class StatisticService extends ChangeNotifier {
     ]
   };
 
-  Map<String, List<StatisticBar>> _barData = {
+  final Map<String, List<StatisticBar>> _barData = {
     "Weekly": [
       StatisticBar(label: "Mon", budget: 400, spent: 300),
       StatisticBar(label: "Tue", budget: 400, spent: 450),
@@ -67,26 +69,25 @@ class StatisticService extends ChangeNotifier {
   List<StatisticSlice> getSlices(String period) => _categorySlices[period] ?? [];
   List<StatisticBar> getBars(String period) => _barData[period] ?? [];
 
-  // This method allows the Home Page (or any other part) to update the budget/spent values
+  /// Updates specific category spending. Home page can call this.
   void updateCategoryData(String period, String categoryName, double newSpent) {
-    if (_categorySlices.containsKey(period)) {
-      final list = _categorySlices[period]!;
-      int idx = list.indexWhere((s) => s.name == categoryName);
+    final list = _categorySlices[period];
+    if (list != null) {
+      final int idx = list.indexWhere((s) => s.name == categoryName);
       if (idx != -1) {
-        // In a real app, logic to recalculate percentage based on total would go here
-        final old = list[idx];
+        final StatisticSlice old = list[idx];
         list[idx] = StatisticSlice(
           name: old.name,
-          percentage: old.percentage, // Keeping percentage fixed for mock simplification
+          percentage: old.percentage,
           color: old.color,
           amount: newSpent,
         );
-        notifyListeners(); // NOTIFY THE UI TO REBUILD IMMEDIATELY
+        notifyListeners(); // Auto-refresh all listeners (Statistics Page)
       }
     }
   }
 
-  // Update whole period data
+  /// Sets entire period data
   void setPeriodData(String period, List<StatisticSlice> slices, List<StatisticBar> bars) {
     _categorySlices[period] = slices;
     _barData[period] = bars;
