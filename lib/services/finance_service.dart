@@ -172,3 +172,39 @@ class FinanceService {
       rethrow;
     }
   }
+
+  // Get financial summary
+  Stream<Map<String, double>> getFinancialSummary(String userId) {
+    final now = DateTime.now();
+    final startOfMonth = DateTime(now.year, now.month, 1);
+    final endOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+
+    return _firestore
+        .collection('transactions')
+        .where('userId', isEqualTo: userId)
+        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfMonth))
+        .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endOfMonth))
+        .snapshots()
+        .map((snapshot) {
+      double income = 0;
+      double expenses = 0;
+
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        final amount = (data['amount'] ?? 0).toDouble();
+        final type = data['type'] ?? 'expense';
+
+        if (type == 'income') {
+          income += amount;
+        } else {
+          expenses += amount;
+        }
+      }
+
+      return {
+        'income': income,
+        'expenses': expenses,
+        'totalBalance': income - expenses,
+      };
+    });
+  }
