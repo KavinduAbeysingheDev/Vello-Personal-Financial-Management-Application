@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'saving_goals_painter.dart';
+import 'saving_goals_backend.dart';
 
 class SavingsGoalsScreen extends StatelessWidget {
   const SavingsGoalsScreen({super.key});
@@ -28,7 +29,7 @@ class SavingsGoalsScreen extends StatelessWidget {
           padding: const EdgeInsets.all(10),
           child: Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withValues(alpha: 0.5),
+              color: const Color(0xFF10B981).withOpacity(0.5),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
@@ -63,182 +64,144 @@ class SavingsGoalsScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 18, 16, 32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Bill Detected REMOVED
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: ListenableBuilder(
+        listenable: SavingsGoalService(),
+        builder: (context, child) {
+          final service = SavingsGoalService();
+          final goals = service.goals;
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 18, 16, 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                // Bill Detected REMOVED
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Savings Goals',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF111827),
-                      ),
+                    const Row(
+                      children: [
+                        Text(
+                          'Savings Goals',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF111827),
+                          ),
+                        ),
+                        SizedBox(width: 6),
+                        Icon(
+                          Icons.auto_awesome,
+                          color: Color(0xFF10B981),
+                          size: 15,
+                        ),
+                      ],
                     ),
-                    SizedBox(width: 6),
-                    Icon(
-                      Icons.auto_awesome,
-                      color: Color(0xFF10B981),
-                      size: 15,
+                    ElevatedButton.icon(
+                      onPressed: () => _showNewGoalModal(context),
+                      icon: const Icon(Icons.add, size: 14),
+                      label: const Text(
+                        'New Goal',
+                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF047857),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                      ),
                     ),
                   ],
                 ),
-                ElevatedButton.icon(
-                  onPressed: () => _showNewGoalModal(context),
-                  icon: const Icon(Icons.add, size: 14),
-                  label: const Text(
-                    'New Goal',
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                const SizedBox(height: 18),
+
+                // Total Progress Card (Live Data)
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF7B1FA2), Color(0xFF9C27B0)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF9C27B0).withOpacity(0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF047857),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 8,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Total Progress',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '\$${service.totalSaved.toInt()}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      Text(
+                        'of \$${service.totalTarget.toInt()}',
+                        style: const TextStyle(color: Colors.white70, fontSize: 14),
+                      ),
+                      const SizedBox(height: 24),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: LinearProgressIndicator(
+                          value: service.overallProgress,
+                          backgroundColor: Colors.white24,
+                          valueColor: const AlwaysStoppedAnimation(Colors.white),
+                          minHeight: 8,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          '${(service.overallProgress * 100).toStringAsFixed(1)}% Complete',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+
+                const SizedBox(height: 20),
+
+                // Goal Cards from Service
+                ...goals.map((goal) => Padding(
+                      padding: const EdgeInsets.only(bottom: 14),
+                      child: _buildGoalCard(context: context, goal: goal),
+                    )),
+
+                const SizedBox(height: 32),
               ],
             ),
-            const SizedBox(height: 18),
-
-            // Total Progress Card (Refined Figma Style)
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF7B1FA2), Color(0xFF9C27B0)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF9C27B0).withOpacity(0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Total Progress',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    '\$10050',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const Text(
-                    'of \$17000',
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                  const SizedBox(height: 24),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: const LinearProgressIndicator(
-                      value: 10050 / 17000,
-                      backgroundColor: Colors.white24,
-                      valueColor: AlwaysStoppedAnimation(Colors.white),
-                      minHeight: 8,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      '59.1% Complete',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Goal Cards
-            _buildGoalCard(
-              context: context,
-              icon: Icons.shield,
-              iconColor: const Color(0xFF3B82F6),
-              title: 'Emergency Fund',
-              priority: 'high',
-              priorityColor: const Color(0xFFFEE2E2),
-              priorityTextColor: const Color(0xFFEF4444),
-              subtitle: '75 days left',
-              saved: 6500.00,
-              target: 10000.00,
-              progressColor: const Color(0xFF3B82F6),
-              remaining: 3500.00,
-            ),
-
-            const SizedBox(height: 14),
-
-            _buildGoalCard(
-              context: context,
-              icon: Icons.flight,
-              iconColor: const Color(0xFF4B5563),
-              title: 'Vacation to Japan',
-              priority: 'medium',
-              priorityColor: const Color(0xFFFEF3C7),
-              priorityTextColor: const Color(0xFFF59E0B),
-              subtitle: 'Overdue',
-              saved: 2100.00,
-              target: 5000.00,
-              progressColor: const Color(0xFF9CA3AF),
-              remaining: 2900.00,
-              isOverdue: true,
-            ),
-
-            const SizedBox(height: 14),
-
-            _buildGoalCard(
-              context: context,
-              icon: Icons.laptop_mac,
-              iconColor: const Color(0xFF3B82F6),
-              title: 'New Laptop',
-              priority: 'low',
-              priorityColor: const Color(0xFFD1FAE5),
-              priorityTextColor: const Color(0xFF10B981),
-              subtitle: 'Overdue',
-              saved: 1450.00,
-              target: 2000.00,
-              progressColor: const Color(0xFF3B82F6),
-              remaining: 550.00,
-              isOverdue: true,
-            ),
-
-            const SizedBox(height: 32),
-          ],
-        ),
+          );
+        },
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -317,20 +280,9 @@ class SavingsGoalsScreen extends StatelessWidget {
 
   Widget _buildGoalCard({
     required BuildContext context,
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String priority,
-    required Color priorityColor,
-    required Color priorityTextColor,
-    required String subtitle,
-    required double saved,
-    required double target,
-    required Color progressColor,
-    required double remaining,
-    bool isOverdue = false,
+    required SavingsGoal goal,
   }) {
-    final progress = saved / target;
+    final progress = goal.progress;
 
     return Container(
       decoration: BoxDecoration(
@@ -351,14 +303,19 @@ class SavingsGoalsScreen extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: iconColor, size: 28),
+              goal.icon is IconData
+                  ? Icon(goal.icon as IconData, color: goal.iconColor, size: 28)
+                  : Text(
+                      goal.icon.toString(),
+                      style: const TextStyle(fontSize: 28),
+                    ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      goal.title,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -374,37 +331,38 @@ class SavingsGoalsScreen extends StatelessWidget {
                             vertical: 3,
                           ),
                           decoration: BoxDecoration(
-                            color: priorityColor,
+                            color: goal.priorityColor,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            priority,
+                            goal.priority,
                             style: TextStyle(
-                              color: priorityTextColor,
+                              color: goal.priorityTextColor,
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF3F4F6),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            subtitle,
-                            style: const TextStyle(
-                              fontSize: 10,
-                              color: Color(0xFF4B5563),
-                              fontWeight: FontWeight.w500,
+                        if (goal.subtitle.isNotEmpty)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF3F4F6),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              goal.subtitle,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Color(0xFF4B5563),
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ],
@@ -421,7 +379,7 @@ class SavingsGoalsScreen extends StatelessWidget {
                 style: TextStyle(color: Color(0xFF6B7280), fontSize: 13),
               ),
               Text(
-                '\$${saved.toInt()}',
+                '\$${goal.saved.toInt()}',
                 style: const TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
@@ -437,7 +395,7 @@ class SavingsGoalsScreen extends StatelessWidget {
               value: progress,
               minHeight: 8,
               backgroundColor: const Color(0xFFE5E7EB),
-              valueColor: AlwaysStoppedAnimation(progressColor),
+              valueColor: AlwaysStoppedAnimation(goal.progressColor),
             ),
           ),
           const SizedBox(height: 8),
@@ -449,7 +407,7 @@ class SavingsGoalsScreen extends StatelessWidget {
                 style: TextStyle(color: Color(0xFF6B7280), fontSize: 13),
               ),
               Text(
-                '\$${target.toInt()}',
+                '\$${goal.target.toInt()}',
                 style: const TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
@@ -460,7 +418,7 @@ class SavingsGoalsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           InkWell(
-            onTap: () => _showAddFundsModal(context, title),
+            onTap: () => _showAddFundsModal(context, goal.id, goal.title),
             borderRadius: BorderRadius.circular(12),
             child: Container(
               width: double.infinity,
@@ -480,7 +438,7 @@ class SavingsGoalsScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Add to Goal (\$${remaining.toInt()}.00 remaining)',
+                    'Add to Goal (\$${goal.remaining.toInt()}.00 remaining)',
                     style: const TextStyle(
                       color: Color(0xFF059669),
                       fontWeight: FontWeight.w700,
@@ -711,7 +669,40 @@ class SavingsGoalsScreen extends StatelessWidget {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () => Navigator.pop(context),
+                          onPressed: () {
+                            // Logic to add goal to backend
+                            final newGoal = SavingsGoal(
+                              id: DateTime.now().toString(),
+                              title: nameController.text.isEmpty
+                                  ? 'New Goal'
+                                  : nameController.text,
+                              target:
+                                  double.tryParse(targetController.text) ?? 0,
+                              saved: double.tryParse(startController.text) ?? 0,
+                              icon: '🎯', // Default icon for now
+                              iconColor: Colors.blue, // Default color
+                              priority: selectedPriority.toLowerCase(),
+                              priorityColor: selectedPriority == 'High'
+                                  ? const Color(0xFFFEE2E2)
+                                  : (selectedPriority == 'Medium'
+                                      ? const Color(0xFFFEF3C7)
+                                      : const Color(0xFFD1FAE5)),
+                              priorityTextColor: selectedPriority == 'High'
+                                  ? const Color(0xFFEF4444)
+                                  : (selectedPriority == 'Medium'
+                                      ? const Color(0xFFF59E0B)
+                                      : const Color(0xFF10B981)),
+                              progressColor: selectedPriority == 'High'
+                                  ? const Color(0xFFEF4444)
+                                  : const Color(0xFF3B82F6),
+                              // subtitle will be calculated based on date, or default
+                              subtitle: selectedDate != null
+                                  ? '${selectedDate!.difference(DateTime.now()).inDays} days left'
+                                  : 'No deadline',
+                            );
+                            SavingsGoalService().addGoal(newGoal);
+                            Navigator.pop(context);
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF00695C),
                             foregroundColor: Colors.white,
@@ -787,7 +778,10 @@ class SavingsGoalsScreen extends StatelessWidget {
         ),
       ),
     );
-  }  void _showAddFundsModal(BuildContext context, String goalTitle) {
+  }
+
+  void _showAddFundsModal(
+      BuildContext context, String goalId, String goalTitle) {
     final amountController = TextEditingController();
 
     showDialog(
@@ -886,7 +880,14 @@ class SavingsGoalsScreen extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () {
+                        final amount =
+                            double.tryParse(amountController.text) ?? 0;
+                        if (amount > 0) {
+                          SavingsGoalService().addFunds(goalId, amount);
+                        }
+                        Navigator.pop(context);
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF00695C),
                         foregroundColor: Colors.white,
