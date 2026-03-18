@@ -208,3 +208,35 @@ class FinanceService {
       };
     });
   }
+
+  // Get category-wise spending
+  Future<Map<String, double>> getCategorySpending(
+      String userId,
+      DateTime startDate,
+      DateTime endDate,
+      ) async {
+    try {
+      final snapshot = await _firestore
+          .collection('transactions')
+          .where('userId', isEqualTo: userId)
+          .where('type', isEqualTo: 'expense')
+          .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+          .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
+          .get();
+
+      Map<String, double> categorySpending = {};
+
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        final category = data['category'] ?? 'Other';
+        final amount = (data['amount'] ?? 0).toDouble();
+
+        categorySpending[category] = (categorySpending[category] ?? 0) + amount;
+      }
+
+      return categorySpending;
+    } catch (e) {
+      rethrow;
+    }
+  }
+}
