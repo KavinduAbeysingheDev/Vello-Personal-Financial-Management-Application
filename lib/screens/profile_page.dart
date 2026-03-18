@@ -84,3 +84,95 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     }
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+
+    return Scaffold(
+        backgroundColor: Colors.grey[50],
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF26a69a),
+          elevation: 0,
+          title: const Text(
+            'My Profile',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          ),
+          iconTheme: const IconThemeData(color: Colors.white),
+        ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+          child: Column(
+            children: [
+            // Header with avatar
+            Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF26a69a), Color(0xFF1e8c82)],
+              ),
+            ),
+            padding: const EdgeInsets.only(
+                top: 30, bottom: 40, left: 24, right: 24),
+            child: Column(
+              children: [
+                // Avatar circle
+                Container(
+                  width: 90,
+                  height: 90,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.3),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                        color: Colors.white.withOpacity(0.6), width: 3),
+                  ),
+                  child: Center(
+                    child: Text(
+                      _userModel?.name.isNotEmpty == true
+                          ? _userModel!.name[0].toUpperCase()
+                          : '?',
+                      style: const TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  _userModel?.name ?? 'User',
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _userModel?.email ?? firebaseUser?.email ?? '',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.white70,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Curved connector
+          Container(
+            height: 24,
+            decoration: const BoxDecoration(
+              color: Color(0xFF1e8c82),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 24),
