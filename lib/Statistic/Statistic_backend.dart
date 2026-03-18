@@ -38,17 +38,57 @@ class StatisticService extends ChangeNotifier {
   // These categories match the Vello Figma design
   final Map<String, List<StatisticSlice>> _categorySlices = {
     "Weekly": [
-      StatisticSlice(name: "Food", percentage: 40, color: const Color(0xFF0D9488), amount: 450),
-      StatisticSlice(name: "Bills", percentage: 25, color: const Color(0xFF10B981), amount: 300),
-      StatisticSlice(name: "Transportation", percentage: 20, color: const Color(0xFF34D399), amount: 200),
-      StatisticSlice(name: "Others", percentage: 15, color: const Color(0xFF6EE7B7), amount: 150),
+      StatisticSlice(
+        name: "Food",
+        percentage: 40,
+        color: const Color(0xFF0D9488),
+        amount: 450,
+      ),
+      StatisticSlice(
+        name: "Bills",
+        percentage: 25,
+        color: const Color(0xFF10B981),
+        amount: 300,
+      ),
+      StatisticSlice(
+        name: "Transportation",
+        percentage: 20,
+        color: const Color(0xFF34D399),
+        amount: 200,
+      ),
+      StatisticSlice(
+        name: "Others",
+        percentage: 15,
+        color: const Color(0xFF6EE7B7),
+        amount: 150,
+      ),
     ],
     "Monthly": [
-      StatisticSlice(name: "Food", percentage: 35, color: const Color(0xFF0D9488), amount: 1200),
-      StatisticSlice(name: "Bills", percentage: 30, color: const Color(0xFF10B981), amount: 1000),
-      StatisticSlice(name: "Transportation", percentage: 20, color: const Color(0xFF34D399), amount: 700),
-      StatisticSlice(name: "Others", percentage: 15, color: const Color(0xFF6EE7B7), amount: 500),
-    ]
+      StatisticSlice(
+        name: "Food",
+        percentage: 35,
+        color: const Color(0xFF0D9488),
+        amount: 1200,
+      ),
+      StatisticSlice(
+        name: "Bills",
+        percentage: 30,
+        color: const Color(0xFF10B981),
+        amount: 1000,
+      ),
+      StatisticSlice(
+        name: "Transportation",
+        percentage: 20,
+        color: const Color(0xFF34D399),
+        amount: 700,
+      ),
+      StatisticSlice(
+        name: "Others",
+        percentage: 15,
+        color: const Color(0xFF6EE7B7),
+        amount: 500,
+      ),
+    ],
   };
 
   final Map<String, List<StatisticBar>> _barData = {
@@ -63,10 +103,11 @@ class StatisticService extends ChangeNotifier {
       StatisticBar(label: "Week 2", budget: 2000, spent: 2200),
       StatisticBar(label: "Week 3", budget: 2000, spent: 1500),
       StatisticBar(label: "Week 4", budget: 2000, spent: 1900),
-    ]
+    ],
   };
 
-  List<StatisticSlice> getSlices(String period) => _categorySlices[period] ?? [];
+  List<StatisticSlice> getSlices(String period) =>
+      _categorySlices[period] ?? [];
   List<StatisticBar> getBars(String period) => _barData[period] ?? [];
 
   /// Updates specific category spending. Home page can call this.
@@ -88,7 +129,11 @@ class StatisticService extends ChangeNotifier {
   }
 
   /// Sets entire period data
-  void setPeriodData(String period, List<StatisticSlice> slices, List<StatisticBar> bars) {
+  void setPeriodData(
+    String period,
+    List<StatisticSlice> slices,
+    List<StatisticBar> bars,
+  ) {
     _categorySlices[period] = slices;
     _barData[period] = bars;
     notifyListeners();
