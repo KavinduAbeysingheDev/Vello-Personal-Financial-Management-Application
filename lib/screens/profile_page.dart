@@ -414,3 +414,89 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
       return;
     }
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Reset Password',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+        content: Text(
+          'A password reset email will be sent to:\n$email',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF26a69a),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              'Send Email',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      setState(() => _isSendingReset = true);
+      try {
+        await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Password reset email sent to $email'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
+      } on FirebaseAuthException catch (e) {
+        if (mounted) {
+          String message;
+          switch (e.code) {
+            case 'user-not-found':
+              message = 'No account found with this email address.';
+              break;
+            case 'invalid-email':
+              message = 'The email address is not valid.';
+              break;
+            case 'too-many-requests':
+              message = 'Too many requests. Please wait a moment and try again.';
+              break;
+            default:
+              message = e.message ?? 'Failed to send reset email. Please try again.';
+          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(message),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Unexpected error: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isSendingReset = false);
+      }
+    }
+  }
+}
