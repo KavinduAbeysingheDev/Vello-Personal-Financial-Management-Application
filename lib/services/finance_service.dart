@@ -137,3 +137,38 @@ class FinanceService {
         .map((snapshot) =>
         snapshot.docs.map((doc) => Budget.fromFirestore(doc)).toList());
   }
+
+  // Create or update budget
+  Future<void> setBudget({
+    required String userId,
+    required String category,
+    required double limit,
+  }) async {
+    try {
+      final now = DateTime.now();
+      final currentMonth = DateTime(now.year, now.month, 1);
+
+      final budgetQuery = await _firestore
+          .collection('budgets')
+          .where('userId', isEqualTo: userId)
+          .where('category', isEqualTo: category)
+          .where('month', isEqualTo: Timestamp.fromDate(currentMonth))
+          .get();
+
+      if (budgetQuery.docs.isNotEmpty) {
+        // Update existing budget
+        await budgetQuery.docs.first.reference.update({'limit': limit});
+      } else {
+        // Create new budget
+        await _firestore.collection('budgets').add({
+          'userId': userId,
+          'category': category,
+          'limit': limit,
+          'spent': 0.0,
+          'month': Timestamp.fromDate(currentMonth),
+        });
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
