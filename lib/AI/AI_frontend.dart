@@ -53,12 +53,9 @@ class _AIFinanceScreenState extends State<AIFinanceScreen> {
                 ListView.builder(
                   controller: _scrollController,
                   padding: const EdgeInsets.fromLTRB(16, 20, 16, 120),
-                  itemCount: _messages.length + 1, // +1 for the Bill Card
+                  itemCount: _messages.length,
                   itemBuilder: (context, index) {
-                    if (index == 0) {
-                      return _buildBillDetectedCard();
-                    }
-                    final msg = _messages[index - 1];
+                    final msg = _messages[index];
                     return _buildChatMessage(
                       isUser: msg['isUser'],
                       text: msg['text'],
@@ -111,7 +108,11 @@ class _AIFinanceScreenState extends State<AIFinanceScreen> {
               color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+            child: const Icon(
+              Icons.auto_awesome,
+              color: Colors.white,
+              size: 20,
+            ),
           ),
           const SizedBox(width: 12),
           Column(
@@ -151,134 +152,12 @@ class _AIFinanceScreenState extends State<AIFinanceScreen> {
           ),
           const Spacer(),
           IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 22),
+            icon: const Icon(
+              Icons.settings_outlined,
+              color: Colors.white,
+              size: 22,
+            ),
             onPressed: () {},
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBillDetectedCard() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 24),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEEF2FF),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.receipt_long_outlined,
-                  color: Color(0xFF4F46E5),
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      'Bill Detected',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 15,
-                        color: Color(0xFF111827),
-                      ),
-                    ),
-                    Text(
-                      'Matched from Gmail storage',
-                      style: TextStyle(
-                        color: Color(0xFF6B7280),
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.more_vert, color: Color(0xFF9CA3AF), size: 20),
-            ],
-          ),
-          const SizedBox(height: 18),
-          const Divider(height: 1, color: Color(0xFFF3F4F6)),
-          const SizedBox(height: 18),
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Electric Company',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF374151),
-                ),
-              ),
-              Text(
-                '\$89.50',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFFDC2626),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF059669),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Add to Expenses',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              OutlinedButton(
-                onPressed: () {},
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFFE5E7EB)),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'Ignore',
-                  style: TextStyle(color: Color(0xFF6B7280), fontSize: 13),
-                ),
-              ),
-            ],
           ),
         ],
       ),
@@ -293,7 +172,9 @@ class _AIFinanceScreenState extends State<AIFinanceScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Row(
-        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isUser) ...[
@@ -304,14 +185,18 @@ class _AIFinanceScreenState extends State<AIFinanceScreen> {
                 color: Color(0xFFECFDF5),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.smart_toy_outlined,
-                  color: Color(0xFF059669), size: 16),
+              child: const Icon(
+                Icons.smart_toy_outlined,
+                color: Color(0xFF059669),
+                size: 16,
+              ),
             ),
           ],
           Flexible(
             child: Column(
-              crossAxisAlignment:
-                  isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: isUser
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -352,7 +237,8 @@ class _AIFinanceScreenState extends State<AIFinanceScreen> {
               ],
             ),
           ),
-          if (isUser) const SizedBox(width: 32), // Space for user avatar if needed
+          if (isUser)
+            const SizedBox(width: 32), // Space for user avatar if needed
         ],
       ),
     );
@@ -408,7 +294,10 @@ class _AIFinanceScreenState extends State<AIFinanceScreen> {
                     controller: _messageController,
                     decoration: const InputDecoration(
                       hintText: 'Ask me anything...',
-                      hintStyle: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
+                      hintStyle: TextStyle(
+                        color: Color(0xFF9CA3AF),
+                        fontSize: 13,
+                      ),
                       border: InputBorder.none,
                     ),
                   ),
@@ -420,7 +309,11 @@ class _AIFinanceScreenState extends State<AIFinanceScreen> {
                     color: Color(0xFF059669),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.send_rounded, color: Colors.white, size: 18),
+                  child: const Icon(
+                    Icons.send_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
                 ),
               ],
             ),
