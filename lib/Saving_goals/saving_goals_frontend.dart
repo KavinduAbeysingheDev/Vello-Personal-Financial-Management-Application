@@ -457,9 +457,14 @@ class SavingsGoalsScreen extends StatelessWidget {
   void _showNewGoalModal(BuildContext context) {
     String selectedPriority = 'Medium';
     DateTime? selectedDate;
+    String selectedEmoji = '🎯';
     final nameController = TextEditingController();
     final targetController = TextEditingController();
     final startController = TextEditingController();
+
+    final List<String> availableEmojis = [
+      '🎯', '💰', '🏝️', '🚗', '🏠', '💻', '💸', '✈️', '🎓', '🏥'
+    ];
 
     showDialog(
       context: context,
@@ -517,33 +522,37 @@ class SavingsGoalsScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
 
-                      // Icon Row (Example)
+                      // Emoji Selector (Interactive)
                       _modalLabel('Goal Icon (Emoji)'),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: const Color(0xFFE5E7EB),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: availableEmojis.map((emoji) {
+                            final isSelected = selectedEmoji == emoji;
+                            return GestureDetector(
+                              onTap: () => setState(() => selectedEmoji = emoji),
+                              child: Container(
+                                margin: const EdgeInsets.only(right: 8),
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? const Color(0xFF00695C)
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? const Color(0xFF00695C)
+                                        : const Color(0xFFE5E7EB),
+                                  ),
+                                ),
+                                child: Text(
+                                  emoji,
+                                  style: const TextStyle(fontSize: 20),
+                                ),
                               ),
-                            ),
-                            child: const Text(
-                              '🎯',
-                              style: TextStyle(fontSize: 20),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          const Text(
-                            'Select an icon',
-                            style: TextStyle(
-                              color: Color(0xFF6B7280),
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
+                            );
+                          }).toList(),
+                        ),
                       ),
                       const SizedBox(height: 14),
 
@@ -679,7 +688,7 @@ class SavingsGoalsScreen extends StatelessWidget {
                               target:
                                   double.tryParse(targetController.text) ?? 0,
                               saved: double.tryParse(startController.text) ?? 0,
-                              icon: '🎯', // Default icon for now
+                              icon: selectedEmoji,
                               iconColor: Colors.blue, // Default color
                               priority: selectedPriority.toLowerCase(),
                               priorityColor: selectedPriority == 'High'
