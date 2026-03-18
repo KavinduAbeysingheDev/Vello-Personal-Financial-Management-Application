@@ -10,14 +10,16 @@ class StatisticScreen extends StatefulWidget {
   State<StatisticScreen> createState() => _StatisticScreenState();
 }
 
-class _StatisticScreenState extends State<StatisticScreen> with SingleTickerProviderStateMixin {
-  final StatisticService _service = StatisticService(); // This is a singleton now
+class _StatisticScreenState extends State<StatisticScreen>
+    with SingleTickerProviderStateMixin {
+  final StatisticService _service =
+      StatisticService(); // This is a singleton now
   final Color _gradLeft = const Color(0xFF0D9488);
   final Color _gradRight = const Color(0xFF10B981);
   final Color _pageBg = const Color(0xFFF9FAFB);
   final Color _darkText = const Color(0xFF1F2937);
   final Color _greyText = const Color(0xFF9CA3AF);
-  
+
   String _selectedPeriod = "Monthly";
   int _touchedPieIndex = -1;
 
@@ -59,7 +61,9 @@ class _StatisticScreenState extends State<StatisticScreen> with SingleTickerProv
                   const SizedBox(height: 35),
                   _buildSectionTitle("Spending by Category"),
                   const SizedBox(height: 15),
-                  _buildPieCard(slices), // Updated automatically when shared state changes
+                  _buildPieCard(
+                    slices,
+                  ), // Updated automatically when shared state changes
                   const SizedBox(height: 40),
                   _buildSectionTitle("Budget vs Actual Spending"),
                   const SizedBox(height: 15),
@@ -214,8 +218,9 @@ class _StatisticScreenState extends State<StatisticScreen> with SingleTickerProv
                             _touchedPieIndex = -1;
                             return;
                           }
-                          _touchedPieIndex =
-                              pieTouchResponse.touchedSection!.touchedSectionIndex;
+                          _touchedPieIndex = pieTouchResponse
+                              .touchedSection!
+                              .touchedSectionIndex;
                         });
                       },
                     ),
@@ -431,8 +436,7 @@ class _StatisticScreenState extends State<StatisticScreen> with SingleTickerProv
                       BarChartRodData(
                         toY: bar.budget,
                         color: _gradLeft.withOpacity(0.12),
-                        width:
-                            48,
+                        width: 48,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       BarChartRodData(
