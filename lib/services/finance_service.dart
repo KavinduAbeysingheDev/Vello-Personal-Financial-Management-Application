@@ -74,3 +74,25 @@ class FinanceService {
         .map((doc) => TransactionModel.fromFirestore(doc))
         .toList());
   }
+
+  // Get transactions by date range
+
+  Stream<List<TransactionModel>> getTransactionsByDateRange(
+      String userId,
+      DateTime startDate,
+      DateTime endDate,
+      ) {
+    return _firestore
+        .collection('transactions')
+        .where('userId', isEqualTo: userId)
+        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+        .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
+        .snapshots()
+        .map((snapshot) {
+      final docs = snapshot.docs
+          .map((doc) => TransactionModel.fromFirestore(doc))
+          .toList();
+      docs.sort((a, b) => b.date.compareTo(a.date));
+      return docs;
+    });
+  }
