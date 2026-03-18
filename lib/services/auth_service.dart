@@ -103,3 +103,17 @@ class AuthService {
       rethrow;
     }
   }
+
+  // Get user data
+  Future<UserModel?> getUserData(String uid) async {
+    try {
+      DocumentSnapshot doc =
+      await _firestore.collection('users').doc(uid).get();
+      if (doc.exists) {
+        return UserModel.fromFirestore(doc);
+      }
+      return null;
+    } catch (e) {
+      rethrow;
+    }
+  }
