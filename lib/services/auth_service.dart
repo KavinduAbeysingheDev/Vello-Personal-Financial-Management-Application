@@ -117,3 +117,21 @@ class AuthService {
       rethrow;
     }
   }
+
+  // Update user profile
+  Future<void> updateUserProfile({
+    required String uid,
+    String? name,
+    String? email,
+  }) async {
+    try {
+      Map<String, dynamic> updates = {};
+      if (name != null) updates['name'] = name;
+      if (email != null) updates['email'] = email;
+
+      await _firestore.collection('users').doc(uid).update(updates);
+    } catch (e) {
+      rethrow;
+    }
+  }
+}
