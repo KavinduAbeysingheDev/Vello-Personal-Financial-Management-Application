@@ -102,7 +102,10 @@ class SavingsGoalsScreen extends StatelessWidget {
                       icon: const Icon(Icons.add, size: 14),
                       label: const Text(
                         'New Goal',
-                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF047857),
@@ -161,7 +164,10 @@ class SavingsGoalsScreen extends StatelessWidget {
                       ),
                       Text(
                         'of \$${service.totalTarget.toInt()}',
-                        style: const TextStyle(color: Colors.white70, fontSize: 14),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
                       ),
                       const SizedBox(height: 24),
                       ClipRRect(
@@ -169,7 +175,9 @@ class SavingsGoalsScreen extends StatelessWidget {
                         child: LinearProgressIndicator(
                           value: service.overallProgress,
                           backgroundColor: Colors.white24,
-                          valueColor: const AlwaysStoppedAnimation(Colors.white),
+                          valueColor: const AlwaysStoppedAnimation(
+                            Colors.white,
+                          ),
                           minHeight: 8,
                         ),
                       ),
@@ -192,10 +200,12 @@ class SavingsGoalsScreen extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 // Goal Cards from Service
-                ...goals.map((goal) => Padding(
-                      padding: const EdgeInsets.only(bottom: 14),
-                      child: _buildGoalCard(context: context, goal: goal),
-                    )),
+                ...goals.map(
+                  (goal) => Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: _buildGoalCard(context: context, goal: goal),
+                  ),
+                ),
 
                 const SizedBox(height: 32),
               ],
@@ -463,7 +473,16 @@ class SavingsGoalsScreen extends StatelessWidget {
     final startController = TextEditingController();
 
     final List<String> availableEmojis = [
-      '🎯', '💰', '🏝️', '🚗', '🏠', '💻', '💸', '✈️', '🎓', '🏥'
+      '🎯',
+      '💰',
+      '🏝️',
+      '🚗',
+      '🏠',
+      '💻',
+      '💸',
+      '✈️',
+      '🎓',
+      '🏥',
     ];
 
     showDialog(
@@ -530,7 +549,8 @@ class SavingsGoalsScreen extends StatelessWidget {
                           children: availableEmojis.map((emoji) {
                             final isSelected = selectedEmoji == emoji;
                             return GestureDetector(
-                              onTap: () => setState(() => selectedEmoji = emoji),
+                              onTap: () =>
+                                  setState(() => selectedEmoji = emoji),
                               child: Container(
                                 margin: const EdgeInsets.only(right: 8),
                                 padding: const EdgeInsets.all(10),
@@ -694,13 +714,13 @@ class SavingsGoalsScreen extends StatelessWidget {
                               priorityColor: selectedPriority == 'High'
                                   ? const Color(0xFFFEE2E2)
                                   : (selectedPriority == 'Medium'
-                                      ? const Color(0xFFFEF3C7)
-                                      : const Color(0xFFD1FAE5)),
+                                        ? const Color(0xFFFEF3C7)
+                                        : const Color(0xFFD1FAE5)),
                               priorityTextColor: selectedPriority == 'High'
                                   ? const Color(0xFFEF4444)
                                   : (selectedPriority == 'Medium'
-                                      ? const Color(0xFFF59E0B)
-                                      : const Color(0xFF10B981)),
+                                        ? const Color(0xFFF59E0B)
+                                        : const Color(0xFF10B981)),
                               progressColor: selectedPriority == 'High'
                                   ? const Color(0xFFEF4444)
                                   : const Color(0xFF3B82F6),
@@ -790,7 +810,10 @@ class SavingsGoalsScreen extends StatelessWidget {
   }
 
   void _showAddFundsModal(
-      BuildContext context, String goalId, String goalTitle) {
+    BuildContext context,
+    String goalId,
+    String goalTitle,
+  ) {
     final amountController = TextEditingController();
 
     showDialog(
