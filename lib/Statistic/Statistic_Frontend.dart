@@ -12,9 +12,11 @@ class StatisticScreen extends StatefulWidget {
 
 class _StatisticScreenState extends State<StatisticScreen> with SingleTickerProviderStateMixin {
   final StatisticService _service = StatisticService();
-  final Color _tealPrimary = const Color(0xFF0D9488);
-  final Color _emeraldPrimary = const Color(0xFF10B981);
-  final Color _bgGray = const Color(0xFFF9FAFB);
+  final Color _gradLeft = const Color(0xFF0D9488);
+  final Color _gradRight = const Color(0xFF10B981);
+  final Color _pageBg = const Color(0xFFF9FAFB);
+  final Color _darkText = const Color(0xFF111827);
+  final Color _greyText = const Color(0xFF6B7280);
   
   String _selectedPeriod = "Monthly";
   int _touchedPieIndex = -1;
@@ -25,26 +27,26 @@ class _StatisticScreenState extends State<StatisticScreen> with SingleTickerProv
     final bars = _service.getBars(_selectedPeriod);
 
     return Scaffold(
-      backgroundColor: _bgGray,
+      backgroundColor: _pageBg,
       body: CustomScrollView(
         slivers: [
           _buildSliverHeader(),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildPeriodToggle(),
-                  const SizedBox(height: 25),
+                  const SizedBox(height: 30),
                   _buildSectionTitle("Spending by Category"),
                   const SizedBox(height: 20),
-                  _buildPieChartCard(slices),
-                  const SizedBox(height: 25),
+                  _buildPieCard(slices),
+                  const SizedBox(height: 30),
                   _buildSectionTitle("Budget vs Actual Spending"),
                   const SizedBox(height: 20),
-                  _buildBarChartCard(bars),
-                  const SizedBox(height: 100), // Space for bottom nav
+                  _buildBarCard(bars),
+                  const SizedBox(height: 80),
                 ],
               ),
             ),
@@ -56,27 +58,28 @@ class _StatisticScreenState extends State<StatisticScreen> with SingleTickerProv
 
   Widget _buildSliverHeader() {
     return SliverAppBar(
-      expandedHeight: 120,
+      expandedHeight: 100,
       pinned: true,
-      backgroundColor: _tealPrimary,
+      backgroundColor: _gradLeft,
       flexibleSpace: FlexibleSpaceBar(
         titlePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         title: const Text(
           "Statistics",
-          style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
         ),
         background: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [_tealPrimary, _emeraldPrimary],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+              colors: [_gradLeft, _gradRight],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
             ),
           ),
         ),
       ),
       actions: [
-        IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert, color: Colors.white)),
+        IconButton(onPressed: () {}, icon: const Icon(Icons.menu, color: Colors.white)),
+        const SizedBox(width: 8),
       ],
     );
   }
@@ -88,8 +91,9 @@ class _StatisticScreenState extends State<StatisticScreen> with SingleTickerProv
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
         ],
+        border: Border.all(color: Colors.black.withOpacity(0.05)),
       ),
       child: Row(
         children: [
@@ -106,17 +110,18 @@ class _StatisticScreenState extends State<StatisticScreen> with SingleTickerProv
       child: GestureDetector(
         onTap: () => setState(() => _selectedPeriod = title),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected ? _tealPrimary : Colors.transparent,
+            color: isSelected ? _gradLeft : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Center(
             child: Text(
               title,
               style: TextStyle(
-                color: isSelected ? Colors.white : Colors.grey,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? Colors.white : _greyText,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                fontSize: 13,
               ),
             ),
           ),
@@ -127,118 +132,48 @@ class _StatisticScreenState extends State<StatisticScreen> with SingleTickerProv
 
   Widget _buildSectionTitle(String title) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF1F2937)),
         ),
-        const Icon(Icons.auto_awesome, color: Color(0xFF10B981), size: 18),
+        const SizedBox(width: 8),
+        const Icon(Icons.auto_awesome, color: Color(0xFF10B981), size: 14),
       ],
     );
   }
 
-  Widget _buildPieChartCard(List<StatisticSlice> slices) {
+  Widget _buildPieCard(List<StatisticSlice> slices) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 5)),
-        ],
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.black.withOpacity(0.05)),
       ),
-      child: Column(
-        children: [
-          SizedBox(
-            height: 200,
-            child: PieChart(
-              PieChartData(
-                pieTouchData: PieTouchData(
-                  touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                    setState(() {
-                      if (!event.isInterestedForInteractions ||
-                          pieTouchResponse == null ||
-                          pieTouchResponse.touchedSection == null) {
-                        _touchedPieIndex = -1;
-                        return;
-                      }
-                      _touchedPieIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
-                    });
-                  },
-                ),
-                borderData: FlBorderData(show: false),
-                sectionsSpace: 4,
-                centerSpaceRadius: 60,
-                sections: slices.asMap().entries.map((entry) {
-                  int idx = entry.key;
-                  var slice = entry.value;
-                  final isTouched = idx == _touchedPieIndex;
-                  final fontSize = isTouched ? 16.0 : 12.0;
-                  final radius = isTouched ? 90.0 : 80.0;
-                  final widgetSize = isTouched ? 65.0 : 55.0;
-
-                  return PieChartSectionData(
-                    color: slice.color,
-                    value: slice.percentage,
-                    title: '${slice.percentage.toInt()}%',
-                    radius: radius,
-                    titleStyle: TextStyle(
-                      fontSize: fontSize,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
-          const SizedBox(height: 30),
-          _buildLegend(slices),
-        ],
+      child: SizedBox(
+        height: 280,
+        child: _PieWithOutsideLabels(
+          slices: slices,
+          touchedIndex: _touchedPieIndex,
+          onTouch: (i) => setState(() => _touchedPieIndex = i),
+        ),
       ),
     );
   }
 
-  Widget _buildLegend(List<StatisticSlice> slices) {
-    return Wrap(
-      spacing: 15,
-      runSpacing: 10,
-      alignment: WrapAlignment.center,
-      children: slices.map((slice) {
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(color: slice.color, shape: BoxShape.circle),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              slice.name,
-              style: const TextStyle(color: Colors.grey, fontSize: 13),
-            ),
-          ],
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildBarChartCard(List<StatisticBar> bars) {
+  Widget _buildBarCard(List<StatisticBar> bars) {
     return Container(
-      padding: const EdgeInsets.all(25),
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 5)),
-        ],
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.black.withOpacity(0.05)),
       ),
       child: Column(
         children: [
           SizedBox(
-            height: 250,
+            height: 220,
             child: BarChart(
               BarChartData(
                 alignment: BarChartAlignment.spaceAround,
@@ -249,13 +184,10 @@ class _StatisticScreenState extends State<StatisticScreen> with SingleTickerProv
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        int index = value.toInt();
-                        if (index >= 0 && index < bars.length) {
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 10),
-                            child: Text(bars[index].label, style: const TextStyle(color: Colors.grey, fontSize: 10)),
-                          );
+                      getTitlesWidget: (v, m) {
+                        int i = v.toInt();
+                        if (i >= 0 && i < bars.length) {
+                          return Padding(padding: const EdgeInsets.only(top: 10), child: Text(bars[i].label, style: TextStyle(color: _greyText, fontSize: 10)));
                         }
                         return const SizedBox();
                       },
@@ -265,13 +197,9 @@ class _StatisticScreenState extends State<StatisticScreen> with SingleTickerProv
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        if (value % 200 == 0) {
-                          return Text(value.toInt().toString(), style: const TextStyle(color: Colors.grey, fontSize: 10));
-                        }
-                        return const SizedBox();
-                      },
-                      reservedSize: 28,
+                      reservedSize: 30,
+                      interval: 200,
+                      getTitlesWidget: (v, m) => Text(v.toInt().toString(), style: TextStyle(color: _greyText, fontSize: 10)),
                     ),
                   ),
                   topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -280,7 +208,7 @@ class _StatisticScreenState extends State<StatisticScreen> with SingleTickerProv
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
-                  getDrawingHorizontalLine: (value) => FlLine(color: Colors.grey.withOpacity(0.1), strokeWidth: 1),
+                  getDrawingHorizontalLine: (v) => FlLine(color: Colors.black.withOpacity(0.03), strokeWidth: 1),
                 ),
                 borderData: FlBorderData(show: false),
                 barGroups: bars.asMap().entries.map((entry) {
@@ -288,21 +216,21 @@ class _StatisticScreenState extends State<StatisticScreen> with SingleTickerProv
                   var bar = entry.value;
                   return BarChartGroupData(
                     x: idx,
+                    barsSpace: 4,
                     barRods: [
                       BarChartRodData(
                         toY: bar.budget,
-                        color: _tealPrimary.withOpacity(0.2),
-                        width: 15,
-                        borderRadius: BorderRadius.circular(4),
+                        color: _gradLeft.withOpacity(0.15),
+                        width: 14,
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
                       ),
                       BarChartRodData(
                         toY: bar.spent,
-                        color: _tealPrimary,
-                        width: 15,
-                        borderRadius: BorderRadius.circular(4),
+                        color: _gradLeft,
+                        width: 14,
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
                       ),
                     ],
-                    barsSpace: 4,
                   );
                 }).toList(),
               ),
@@ -312,9 +240,9 @@ class _StatisticScreenState extends State<StatisticScreen> with SingleTickerProv
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildLegendItem(_tealPrimary.withOpacity(0.2), "Budget"),
-              const SizedBox(width: 20),
-              _buildLegendItem(_tealPrimary, "Spent"),
+              _legendItem(_gradLeft.withOpacity(0.15), "Budget"),
+              const SizedBox(width: 25),
+              _legendItem(_gradLeft, "Spent"),
             ],
           ),
         ],
@@ -322,17 +250,137 @@ class _StatisticScreenState extends State<StatisticScreen> with SingleTickerProv
     );
   }
 
-  Widget _buildLegendItem(Color color, String label) {
+  Widget _legendItem(Color color, String label) {
     return Row(
       children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3)),
-        ),
+        Container(width: 10, height: 10, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2))),
         const SizedBox(width: 8),
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+        Text(label, style: TextStyle(color: _greyText, fontSize: 12)),
       ],
     );
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CUSTOM PIE CHART WITH L-SHAPED OUTSIDE LABELS (Exactly as in Figma)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _PieWithOutsideLabels extends StatelessWidget {
+  final List<StatisticSlice> slices;
+  final int touchedIndex;
+  final ValueChanged<int> onTouch;
+
+  const _PieWithOutsideLabels({required this.slices, required this.touchedIndex, required this.onTouch});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (_, constraints) {
+        final size = min(constraints.maxWidth, constraints.maxHeight);
+        return CustomPaint(
+          painter: _LabelPainter(slices: slices, touchedIndex: touchedIndex),
+          child: Center(
+            child: GestureDetector(
+              onTapUp: (details) {
+                final cx = size / 2;
+                final cy = size / 2;
+                final tap = details.localPosition;
+                double angle = atan2(tap.dy - cy, tap.dx - cx);
+                double deg = angle * 180 / pi + 90;
+                if (deg < 0) deg += 360;
+                double cumulative = 0;
+                for (int i = 0; i < slices.length; i++) {
+                  cumulative += slices[i].percentage / 100 * 360;
+                  if (deg <= cumulative) {
+                    onTouch(i);
+                    return;
+                  }
+                }
+              },
+              child: SizedBox(
+                width: size * 0.55,
+                height: size * 0.55,
+                child: PieChart(
+                  PieChartData(
+                    startDegreeOffset: -90,
+                    sectionsSpace: 2,
+                    centerSpaceRadius: 0,
+                    pieTouchData: PieTouchData(enabled: false),
+                    sections: slices.asMap().entries.map((entry) {
+                      int i = entry.key;
+                      final isTouched = i == touchedIndex;
+                      return PieChartSectionData(
+                        color: entry.value.color,
+                        value: entry.value.percentage,
+                        title: '',
+                        showTitle: false,
+                        radius: isTouched ? 85 : 80,
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _LabelPainter extends CustomPainter {
+  final List<StatisticSlice> slices;
+  final int touchedIndex;
+
+  const _LabelPainter({required this.slices, required this.touchedIndex});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final double pieRadius = size.width * 0.55 / 2 * (80 / 100);
+
+    double startAngle = -pi / 2;
+
+    for (int i = 0; i < slices.length; i++) {
+      final slice = slices[i];
+      final sweep = slice.percentage / 100 * 2 * pi;
+      final mid = startAngle + sweep / 2;
+
+      final p1x = cx + (pieRadius + 8) * cos(mid);
+      final p1y = cy + (pieRadius + 8) * sin(mid);
+
+      final p2x = cx + (pieRadius + 32) * cos(mid);
+      final p2y = cy + (pieRadius + 32) * sin(mid);
+
+      final isRight = cos(mid) >= 0;
+      final p3x = p2x + (isRight ? 25 : -25);
+      final p3y = p2y;
+
+      final paint = Paint()
+        ..color = slice.color
+        ..strokeWidth = 1.2
+        ..style = PaintingStyle.stroke;
+
+      canvas.drawPath(Path()..moveTo(p1x, p1y)..lineTo(p2x, p2y)..lineTo(p3x, p3y), paint);
+
+      final label = '${slice.name} ${slice.percentage.toInt()}%';
+      final tp = TextPainter(
+        text: TextSpan(
+          text: label,
+          style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: slice.color),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+
+      final tx = isRight ? p3x + 5 : p3x - tp.width - 5;
+      final ty = p3y - tp.height / 2;
+      tp.paint(canvas, Offset(tx, ty));
+
+      startAngle += sweep;
+    }
+  }
+
+  @override
+  bool shouldRepaint(_LabelPainter old) => old.touchedIndex != touchedIndex || old.slices != slices;
 }
