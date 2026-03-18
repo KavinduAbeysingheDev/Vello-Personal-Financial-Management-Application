@@ -123,3 +123,17 @@ class FinanceService {
       rethrow;
     }
   }
+
+  // Get budgets for current month
+  Stream<List<Budget>> getBudgets(String userId) {
+    final now = DateTime.now();
+    final currentMonth = DateTime(now.year, now.month, 1);
+
+    return _firestore
+        .collection('budgets')
+        .where('userId', isEqualTo: userId)
+        .where('month', isEqualTo: Timestamp.fromDate(currentMonth))
+        .snapshots()
+        .map((snapshot) =>
+        snapshot.docs.map((doc) => Budget.fromFirestore(doc)).toList());
+  }
