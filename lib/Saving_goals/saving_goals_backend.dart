@@ -1,12 +1,17 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+// ─────────────────────────────────────────────────────────────
+// SavingsGoal Model
+// ─────────────────────────────────────────────────────────────
 class SavingsGoal {
   final String id;
   final String title;
   final String priority;
   final double saved;
   final double target;
-  final dynamic icon; // Can be IconData or String (emoji)
+  final String icon; // Emoji string
   final Color iconColor;
   final Color priorityColor;
   final Color priorityTextColor;
@@ -31,18 +36,58 @@ class SavingsGoal {
 
   double get remaining => target - saved > 0 ? target - saved : 0;
   double get progress => target > 0 ? saved / target : 0;
+
+  // Convert SavingsGoal to JSON Map for saving
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'title': title,
+    'priority': priority,
+    'saved': saved,
+    'target': target,
+    'icon': icon,
+    'iconColor': iconColor.value,
+    'priorityColor': priorityColor.value,
+    'priorityTextColor': priorityTextColor.value,
+    'subtitle': subtitle,
+    'progressColor': progressColor.value,
+    'isOverdue': isOverdue,
+  };
+
+  // Create SavingsGoal from JSON Map for loading
+  factory SavingsGoal.fromJson(Map<String, dynamic> json) => SavingsGoal(
+    id: json['id'],
+    title: json['title'],
+    priority: json['priority'],
+    saved: (json['saved'] as num).toDouble(),
+    target: (json['target'] as num).toDouble(),
+    icon: json['icon'],
+    iconColor: Color(json['iconColor']),
+    priorityColor: Color(json['priorityColor']),
+    priorityTextColor: Color(json['priorityTextColor']),
+    subtitle: json['subtitle'] ?? '',
+    progressColor: Color(json['progressColor']),
+    isOverdue: json['isOverdue'] ?? false,
+  );
 }
 
+// ─────────────────────────────────────────────────────────────
+// SavingsGoalService — Singleton + ChangeNotifier + Persistent
+// ─────────────────────────────────────────────────────────────
 class SavingsGoalService extends ChangeNotifier {
-  // Static Instance for easy access without provider
   static final SavingsGoalService _instance = SavingsGoalService._internal();
   factory SavingsGoalService() => _instance;
   SavingsGoalService._internal();
 
-  final List<SavingsGoal> _goals = [
+  static const String _storageKey = 'savings_goals';
+
+  final List<SavingsGoal> _goals = [];
+  bool _isLoaded = false;
+
+  // ── Default goals (shown first time app opens) ──────────────
+  static final List<SavingsGoal> _defaultGoals = [
     SavingsGoal(
-      id: '1',
-      icon: Icons.shield,
+      id: 'default_1',
+      icon: '🛡️',
       iconColor: const Color(0xFF3B82F6),
       title: 'Emergency Fund',
       priority: 'high',
@@ -54,8 +99,8 @@ class SavingsGoalService extends ChangeNotifier {
       progressColor: const Color(0xFF3B82F6),
     ),
     SavingsGoal(
-      id: '2',
-      icon: Icons.flight,
+      id: 'default_2',
+      icon: '✈️',
       iconColor: const Color(0xFF6B7280),
       title: 'Vacation to Japan',
       priority: 'medium',
@@ -68,8 +113,8 @@ class SavingsGoalService extends ChangeNotifier {
       isOverdue: true,
     ),
     SavingsGoal(
-      id: '3',
-      icon: Icons.laptop_mac,
+      id: 'default_3',
+      icon: '💻',
       iconColor: const Color(0xFF3B82F6),
       title: 'New Laptop',
       priority: 'low',
@@ -83,18 +128,49 @@ class SavingsGoalService extends ChangeNotifier {
     ),
   ];
 
+  // ── Getters ─────────────────────────────────────────────────
   List<SavingsGoal> get goals => List.unmodifiable(_goals);
-
-  double get totalSaved => _goals.fold(0.0, (sum, goal) => sum + goal.saved);
-  double get totalTarget => _goals.fold(0.0, (sum, goal) => sum + goal.target);
+  double get totalSaved => _goals.fold(0.0, (sum, g) => sum + g.saved);
+  double get totalTarget => _goals.fold(0.0, (sum, g) => sum + g.target);
   double get overallProgress => totalTarget > 0 ? totalSaved / totalTarget : 0;
 
-  void addGoal(SavingsGoal goal) {
-    _goals.insert(0, goal);
+  // ── Load goals from SharedPreferences ───────────────────────
+  Future<void> loadGoals() async {
+    if (_isLoaded) return;
+    _isLoaded = true;
+
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString(_storageKey);
+
+    if (jsonString == null) {
+      // First time: load default goals
+      _goals.addAll(_defaultGoals);
+      await _saveGoals(); // Save defaults to storage
+    } else {
+      final List<dynamic> jsonList = jsonDecode(jsonString);
+      _goals.clear();
+      _goals.addAll(jsonList.map((e) => SavingsGoal.fromJson(e)).toList());
+    }
+
     notifyListeners();
   }
 
-  void addFunds(String id, double amount) {
+  // ── Save all goals to SharedPreferences ─────────────────────
+  Future<void> _saveGoals() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = jsonEncode(_goals.map((g) => g.toJson()).toList());
+    await prefs.setString(_storageKey, jsonString);
+  }
+
+  // ── Add a new goal ──────────────────────────────────────────
+  Future<void> addGoal(SavingsGoal goal) async {
+    _goals.insert(0, goal);
+    await _saveGoals();
+    notifyListeners();
+  }
+
+  // ── Add funds to an existing goal ───────────────────────────
+  Future<void> addFunds(String id, double amount) async {
     final index = _goals.indexWhere((g) => g.id == id);
     if (index != -1) {
       final goal = _goals[index];
@@ -112,7 +188,15 @@ class SavingsGoalService extends ChangeNotifier {
         progressColor: goal.progressColor,
         isOverdue: goal.isOverdue,
       );
+      await _saveGoals();
       notifyListeners();
     }
+  }
+
+  // ── Delete a goal ────────────────────────────────────────────
+  Future<void> deleteGoal(String id) async {
+    _goals.removeWhere((g) => g.id == id);
+    await _saveGoals();
+    notifyListeners();
   }
 }
