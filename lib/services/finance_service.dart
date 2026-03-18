@@ -62,3 +62,15 @@ class FinanceService {
       print('Error updating budget: $e');
     }
   }
+
+  // Get all transactions for a user
+  Stream<List<TransactionModel>> getTransactions(String userId) {
+    return _firestore
+        .collection('transactions')
+        .where('userId', isEqualTo: userId)
+        .orderBy('date', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+        .map((doc) => TransactionModel.fromFirestore(doc))
+        .toList());
+  }
