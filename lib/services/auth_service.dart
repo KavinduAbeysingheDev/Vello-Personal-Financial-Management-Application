@@ -58,3 +58,30 @@ class AuthService {
       rethrow;
     }
   }
+
+  // Initialize default budgets for new user
+  Future<void> _initializeDefaultBudgets(String userId) async {
+    final defaultBudgets = [
+      {'category': 'Food', 'limit': 500.0},
+      {'category': 'Transportation', 'limit': 200.0},
+      {'category': 'Entertainment', 'limit': 100.0},
+      {'category': 'Shopping', 'limit': 300.0},
+    ];
+
+    final batch = _firestore.batch();
+    final now = DateTime.now();
+    final currentMonth = DateTime(now.year, now.month, 1);
+
+    for (var budget in defaultBudgets) {
+      final docRef = _firestore.collection('budgets').doc();
+      batch.set(docRef, {
+        'userId': userId,
+        'category': budget['category'],
+        'limit': budget['limit'],
+        'spent': 0.0,
+        'month': Timestamp.fromDate(currentMonth),
+      });
+    }
+
+    await batch.commit();
+  }
