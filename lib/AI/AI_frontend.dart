@@ -112,56 +112,26 @@ class _AIFinanceScreenState extends State<AIFinanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
-      body: Column(
-        children: [
-          _buildHeader(),
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              itemCount: _messages.length + (_isTyping ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index == _messages.length) {
-                  return _buildTypingIndicator();
-                }
-                final message = _messages[index];
-                return _buildChatMessage(message);
-              },
-            ),
+    return Column(
+      children: [
+        // _buildHeader() REMOVED to use the global consistent Header
+        Expanded(
+          child: ListView.builder(
+            controller: _scrollController,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            itemCount: _messages.length + (_isTyping ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index == _messages.length) {
+                return _buildTypingIndicator();
+              }
+              final message = _messages[index];
+              return _buildChatMessage(message);
+            },
           ),
-          _buildBottomSection(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Container(
-      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 12, left: 20, right: 20, bottom: 20),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF065F46), Color(0xFF10B981)], // Dark teal gradient
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
         ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            "Vello AI",
-            style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          Row(
-            children: [
-              IconButton(onPressed: () {}, icon: const Icon(Icons.menu, color: Colors.white)),
-              IconButton(onPressed: () {}, icon: const Icon(Icons.settings_outlined, color: Colors.white)),
-            ],
-          ),
-        ],
-      ),
+        _buildBottomSection(),
+        const SizedBox(height: 100), // Space for global navigation bar
+      ],
     );
   }
 
