@@ -3,7 +3,6 @@
 // Then update the import in main.dart to match your project structure.
 
 import 'package:flutter/material.dart';
-import 'saving_goals_painter.dart';
 import 'saving_goals_backend.dart';
 
 class SavingsGoalsScreen extends StatefulWidget {
@@ -23,280 +22,152 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF0F2F5), // Light gray bg from Figma
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF03724E), Color(0xFF069668)],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-          ),
-        ),
-        leading: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withOpacity(0.5),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-              child: SizedBox(
-                width: 18,
-                height: 18,
-                child: CustomPaint(painter: VelloLogoPainter()),
-              ),
-            ),
-          ),
-        ),
-        title: const Text(
-          'Vello',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.menu, color: Colors.white, size: 22),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(
-              Icons.settings_outlined,
-              color: Colors.white,
-              size: 22,
-            ),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: ListenableBuilder(
-        listenable: SavingsGoalService(),
-        builder: (context, child) {
-          final service = SavingsGoalService();
-          final goals = service.goals;
+    return ListenableBuilder(
+      listenable: SavingsGoalService(),
+      builder: (context, child) {
+        final service = SavingsGoalService();
+        final goals = service.goals;
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 18, 16, 32),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Bill Detected REMOVED
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Row(
-                      children: [
-                        Text(
-                          'Savings Goals',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF111827),
-                          ),
-                        ),
-                        SizedBox(width: 6),
-                        Icon(
-                          Icons.auto_awesome,
-                          color: Color(0xFF10B981),
-                          size: 15,
-                        ),
-                      ],
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: () => _showNewGoalModal(context),
-                      icon: const Icon(Icons.add, size: 14),
-                      label: const Text(
-                        'New Goal',
+        return SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 120),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Bill Detected REMOVED
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Row(
+                    children: [
+                      Text(
+                        'Savings Goals',
                         style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF111827),
                         ),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF047857),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 8,
+                      SizedBox(width: 6),
+                      Icon(
+                        Icons.auto_awesome,
+                        color: Color(0xFF10B981),
+                        size: 15,
+                      ),
+                    ],
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () => _showNewGoalModal(context),
+                    icon: const Icon(Icons.add, size: 14),
+                    label: const Text(
+                      'New Goal',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF047857),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+
+              // Total Progress Card (Live Data)
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF7B1FA2), Color(0xFF9C27B0)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF9C27B0).withOpacity(0.3),
+                      blurRadius: 15,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Total Progress',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '\$${service.totalSaved.toInt()}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    Text(
+                      'of \$${service.totalTarget.toInt()}',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: LinearProgressIndicator(
+                        value: service.overallProgress,
+                        backgroundColor: Colors.white24,
+                        valueColor: const AlwaysStoppedAnimation(Colors.white),
+                        minHeight: 8,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        '${(service.overallProgress * 100).toStringAsFixed(1)}% Complete',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 18),
+              ),
 
-                // Total Progress Card (Live Data)
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF7B1FA2), Color(0xFF9C27B0)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF9C27B0).withOpacity(0.3),
-                        blurRadius: 15,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Total Progress',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '\$${service.totalSaved.toInt()}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      Text(
-                        'of \$${service.totalTarget.toInt()}',
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: LinearProgressIndicator(
-                          value: service.overallProgress,
-                          backgroundColor: Colors.white24,
-                          valueColor: const AlwaysStoppedAnimation(
-                            Colors.white,
-                          ),
-                          minHeight: 8,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          '${(service.overallProgress * 100).toStringAsFixed(1)}% Complete',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+              const SizedBox(height: 20),
+
+              // Goal Cards from Service
+              ...goals.map(
+                (goal) => Padding(
+                  padding: const EdgeInsets.only(bottom: 14),
+                  child: _buildGoalCard(context: context, goal: goal),
                 ),
+              ),
 
-                const SizedBox(height: 20),
-
-                // Goal Cards from Service
-                ...goals.map(
-                  (goal) => Padding(
-                    padding: const EdgeInsets.only(bottom: 14),
-                    child: _buildGoalCard(context: context, goal: goal),
-                  ),
-                ),
-
-                const SizedBox(height: 32),
-              ],
-            ),
-          );
-        },
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 14,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _navIcon(Icons.account_balance_wallet_outlined, 'Home', true),
-                _navIcon(Icons.camera_alt_outlined, 'Scan', false),
-                // Centre Action Button
-                GestureDetector(
-                  onTap: () {},
-                  child: Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF6366F1).withOpacity(0.4),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(Icons.add, color: Colors.white, size: 28),
-                  ),
-                ),
-                _navIcon(Icons.calendar_today_outlined, 'Events', false),
-                _navIcon(Icons.smart_toy_outlined, 'AI', false),
-              ],
-            ),
+              const SizedBox(height: 32),
+            ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _navIcon(IconData icon, String label, bool active) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          size: 22,
-          color: active ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
-        ),
-        const SizedBox(height: 3),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            color: active ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
-            fontWeight: active ? FontWeight.w600 : FontWeight.w400,
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 
