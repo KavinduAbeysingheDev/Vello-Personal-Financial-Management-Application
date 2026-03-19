@@ -34,7 +34,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildHeader(),
-                const SizedBox(height: 24),
+                const SizedBox(height: 28),
                 _buildAppearanceSection(),
                 const SizedBox(height: 20),
                 _buildLanguageSection(),
@@ -69,26 +69,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       preferredSize: const Size.fromHeight(kToolbarHeight),
       child: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF0D9488), Color(0xFF22C55E)],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-          ),
+          color: Color(0xFF0F9D58), // Darker green
         ),
         child: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           title: Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(Icons.spa, color: Colors.white, size: 22),
-              ),
-              const SizedBox(width: 12),
               const Text(
                 'Vello',
                 style: TextStyle(
@@ -105,24 +92,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               icon: const Icon(Icons.menu, color: Colors.white),
               onPressed: () {},
             ),
-            _buildGlassIconButton(Icons.settings),
-            const SizedBox(width: 16),
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(right: 16, left: 8),
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.35), // Clear circle background
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.settings, color: Colors.white, size: 20),
+              ),
+            ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildGlassIconButton(IconData icon) {
-    return Center(
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.25),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, color: Colors.white, size: 20),
       ),
     );
   }
@@ -134,7 +117,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const Text(
           'Settings',
           style: TextStyle(
-            fontSize: 32, // Perfect match for Figma large headers
+            fontSize: 32, // Matches Figma
             fontWeight: FontWeight.w800,
             color: Color(0xFF111827),
             letterSpacing: -0.5,
@@ -281,7 +264,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: _buildSectionTitle('Notifications', Icons.notifications_none),
           ),
           _buildSwitchTile(
-            icon: Icons.notifications_none,
+            icon: Icons.notifications_none, // Fix per Figma
             title: 'Budget Alerts',
             subtitle: 'Get notified when approaching budget limits',
             value: _settingsProvider.budgetAlerts,
@@ -289,7 +272,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const Divider(height: 1, color: Color(0xFFF3F4F6), indent: 16, endIndent: 16),
           _buildSwitchTile(
-            icon: Icons.analytics_outlined,
+            icon: Icons.insert_chart_outlined, // Fix per Figma
             title: 'Weekly Summary',
             subtitle: 'Receive weekly spending summaries',
             value: _settingsProvider.weeklySummary,
@@ -305,14 +288,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (icon != null) {
       return Row(
         children: [
-          Icon(icon, color: const Color(0xFF1F2937), size: 20),
+          Icon(icon, color: const Color(0xFF111827), size: 20),
           const SizedBox(width: 8),
           Text(
             title,
             style: const TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF1F2937),
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF111827),
               letterSpacing: 0.3,
             ),
           ),
@@ -323,8 +306,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       title,
       style: const TextStyle(
         fontSize: 18,
-        fontWeight: FontWeight.w600,
-        color: Color(0xFF1F2937),
+        fontWeight: FontWeight.w700,
+        color: Color(0xFF111827),
         letterSpacing: 0.3,
       ),
     );
@@ -357,8 +340,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required ValueChanged<bool> onChanged,
   }) {
     return ListTile(
-      leading: Icon(icon, color: const Color(0xFF4B5563)),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: Color(0xFF1F2937))),
+      leading: Icon(icon, color: const Color(0xFF374151)),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: Color(0xFF1F2937))),
       subtitle: Text(subtitle, style: const TextStyle(color: Color(0xFF6B7280), fontSize: 13), maxLines: 2),
       trailing: CupertinoSwitch(
         value: value,
