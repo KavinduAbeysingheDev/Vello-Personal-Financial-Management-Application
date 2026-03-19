@@ -253,7 +253,7 @@ class _BottomNavState extends State<_BottomNav> {
           _NavItem(icon: Icons.account_balance_wallet_outlined, label: 'Home',
               selected: _selected == 0, selectedColor: _teal,
               onTap: () => setState(() => _selected = 0)),
-          _NavItem(icon: Icons.qr_code_scanner, label: 'Scan',
+          _NavItem(icon: Icons.camera_alt_outlined, label: 'Scan',
               selected: _selected == 1, selectedColor: _teal,
               onTap: () => setState(() => _selected = 1)),
           // Add button (purple circle)
@@ -280,7 +280,7 @@ class _BottomNavState extends State<_BottomNav> {
           _NavItem(icon: Icons.calendar_today_outlined, label: 'Events',
               selected: _selected == 3, selectedColor: _teal,
               onTap: () => setState(() => _selected = 3)),
-          _NavItem(icon: Icons.smart_toy_outlined, label: 'AI',
+          _NavItem(icon: Icons.auto_awesome_outlined, label: 'AI',
               selected: _selected == 4, selectedColor: _teal,
               onTap: () => setState(() => _selected = 4)),
         ],
