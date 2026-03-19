@@ -25,7 +25,7 @@ class BillScannerService {
 
   // ─── Camera Scan (Multi-photo) ────────────────────────────────
   Future<String?> scanMultiplePhotos(BuildContext context) async {
-    List<String> imagePaths = [];
+    final List<String> imagePaths = [];
 
     while (true) {
       final XFile? image = await _picker.pickImage(
@@ -101,27 +101,29 @@ class BillScannerService {
 
   // ─── Process Multiple Images ──────────────────────────────────
   Future<String?> _processMultipleImages(List<String> imagePaths) async {
-    String mergedText = '';
+    final mergedBuffer = StringBuffer();
 
     for (int i = 0; i < imagePaths.length; i++) {
       final inputImage = InputImage.fromFilePath(imagePaths[i]);
-      final RecognizedText recognizedText =
-          await _textRecognizer.processImage(inputImage);
+      final recognizedText = await _textRecognizer.processImage(inputImage);
 
-      String pageText = '';
-      for (TextBlock block in recognizedText.blocks) {
-        for (TextLine line in block.lines) {
-          pageText += '${line.text}\n';
+      final pageBuffer = StringBuffer();
+      for (final block in recognizedText.blocks) {
+        for (final line in block.lines) {
+          pageBuffer.write(line.text);
+          pageBuffer.write('\n');
         }
       }
 
+      final pageText = pageBuffer.toString();
       debugPrint("---------- OCR PAGE ${i + 1} ----------");
       debugPrint(pageText);
       debugPrint("---------------------------------------");
 
-      mergedText += pageText;
+      mergedBuffer.write(pageText);
     }
 
+    final mergedText = mergedBuffer.toString();
     debugPrint("---------- MERGED OCR TEXT ----------");
     debugPrint(mergedText);
     debugPrint("-------------------------------------");
@@ -137,12 +139,14 @@ class BillScannerService {
     final RecognizedText recognizedText =
         await _textRecognizer.processImage(inputImage);
 
-    String rawText = '';
-    for (TextBlock block in recognizedText.blocks) {
-      for (TextLine line in block.lines) {
-        rawText += '${line.text}\n';
+    final rawBuffer = StringBuffer();
+    for (final block in recognizedText.blocks) {
+      for (final line in block.lines) {
+        rawBuffer.write(line.text);
+        rawBuffer.write('\n');
       }
     }
+    final rawText = rawBuffer.toString();
 
     debugPrint("---------- OCR RAW OUTPUT ($source) ----------");
     debugPrint(rawText);
@@ -224,16 +228,16 @@ Respond with ONLY the number or NOT_FOUND. Nothing else.
     ];
 
     for (int i = 0; i < lines.length; i++) {
-      String lower = lines[i].toLowerCase();
+      final lower = lines[i].toLowerCase();
       if (keywords.any((kw) => lower.contains(kw))) {
-        for (var m in amountRegExp.allMatches(lines[i])) {
-          double? val = double.tryParse(
+        for (final m in amountRegExp.allMatches(lines[i])) {
+          final val = double.tryParse(
               m.group(0)!.replaceAll(' ', '').replaceAll(',', ''));
           if (val != null && val > 10) return val.toStringAsFixed(2);
         }
         for (int j = i + 1; j < lines.length && j <= i + 3; j++) {
-          for (var m in amountRegExp.allMatches(lines[j])) {
-            double? val = double.tryParse(
+          for (final m in amountRegExp.allMatches(lines[j])) {
+            final val = double.tryParse(
                 m.group(0)!.replaceAll(' ', '').replaceAll(',', ''));
             if (val != null && val > 10) return val.toStringAsFixed(2);
           }
@@ -243,8 +247,8 @@ Respond with ONLY the number or NOT_FOUND. Nothing else.
 
     final List<double> allAmounts = [];
     for (final line in lines) {
-      for (var m in amountRegExp.allMatches(line)) {
-        double? val = double.tryParse(
+      for (final m in amountRegExp.allMatches(line)) {
+        final val = double.tryParse(
             m.group(0)!.replaceAll(' ', '').replaceAll(',', ''));
         if (val != null && val > 10) allAmounts.add(val);
       }
@@ -254,16 +258,16 @@ Respond with ONLY the number or NOT_FOUND. Nothing else.
         allAmounts.where((v) => v % 100 == 0 && v >= 100).toList();
 
     if (roundNumbers.isNotEmpty && allAmounts.length >= 2) {
-      double cashGiven = roundNumbers.reduce((a, b) => a > b ? a : b);
-      int idx = allAmounts.lastIndexOf(cashGiven);
+      final cashGiven = roundNumbers.reduce((a, b) => a > b ? a : b);
+      final idx = allAmounts.lastIndexOf(cashGiven);
       if (idx > 0) {
         return allAmounts[idx - 1].toStringAsFixed(2);
       }
     }
 
-    double largest = allAmounts.isNotEmpty
+    final largest = allAmounts.isNotEmpty
         ? allAmounts.reduce((a, b) => a > b ? a : b)
-        : 0;
+        : 0.0;
     return largest > 0 ? largest.toStringAsFixed(2) : "Amount not found";
   }
 
