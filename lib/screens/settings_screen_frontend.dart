@@ -117,17 +117,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const Text(
           'Settings',
           style: TextStyle(
-            fontSize: 26, // Reduced font size per user request
+            fontSize: 16, // Identical smaller font size
             fontWeight: FontWeight.w800,
             color: Color(0xFF111827),
             letterSpacing: -0.5,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 4),
         Text(
           'Manage your app preferences',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 16, // Identical smaller font size
             color: Colors.grey.shade600,
           ),
         ),
