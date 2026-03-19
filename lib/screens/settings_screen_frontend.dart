@@ -69,41 +69,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
       preferredSize: const Size.fromHeight(kToolbarHeight),
       child: Container(
         decoration: const BoxDecoration(
-          color: Color(0xFF0F9D58), // Darker green
+          color: Color(0xFF00966D), // Exact Teal background from screenshot
         ),
         child: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           title: Row(
             children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2EAF8D), // Lighter teal box
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.grass, color: Color(0xFFFFD700), size: 16), // Gold icon
+              ),
+              const SizedBox(width: 10),
               const Text(
                 'Vello',
                 style: TextStyle(
                   color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 22,
-                  letterSpacing: -0.5,
+                  fontWeight: FontWeight.w400, // Normal font weight
+                  fontSize: 20,
                 ),
               ),
             ],
           ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.menu, color: Colors.white),
+              icon: const Icon(Icons.menu, color: Colors.white, size: 22),
               onPressed: () {},
             ),
-            Center(
-              child: Container(
-                margin: const EdgeInsets.only(right: 16, left: 8),
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.35), // Clear circle background
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.settings_outlined, color: Colors.white, size: 20),
-              ),
+            IconButton(
+              icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 22),
+              onPressed: () {},
             ),
+            const SizedBox(width: 4),
           ],
         ),
       ),
