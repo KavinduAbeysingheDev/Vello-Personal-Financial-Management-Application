@@ -42,6 +42,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       'Scan': 'ස්කෑන්',
       'Events': 'සිදුවීම්',
       'AI': 'AI',
+      'English': 'ඉංග්‍රීසි',
+      'Sinhala': 'සිංහල',
+      'Tamil': 'දෙමළ',
     },
     'Tamil': {
       'Settings': 'அமைப்புகள்',
@@ -242,7 +245,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                lang['name']!,
+                                t(lang['name']!),
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
