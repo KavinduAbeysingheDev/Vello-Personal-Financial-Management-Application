@@ -8,8 +8,6 @@ class SettingsProvider with ChangeNotifier {
   bool _smsBills = false;
   bool _budgetAlerts = true;
   bool _weeklySummary = true;
-  bool _biometric = false;
-  bool _twoFactor = false;
 
   bool get isDarkMode => _isDarkMode;
   String get language => _language;
@@ -17,8 +15,6 @@ class SettingsProvider with ChangeNotifier {
   bool get smsBills => _smsBills;
   bool get budgetAlerts => _budgetAlerts;
   bool get weeklySummary => _weeklySummary;
-  bool get biometric => _biometric;
-  bool get twoFactor => _twoFactor;
 
   SettingsProvider() {
     _loadSettings();
@@ -32,8 +28,6 @@ class SettingsProvider with ChangeNotifier {
     _smsBills = prefs.getBool('smsBills') ?? false;
     _budgetAlerts = prefs.getBool('budgetAlerts') ?? true;
     _weeklySummary = prefs.getBool('weeklySummary') ?? true;
-    _biometric = prefs.getBool('biometric') ?? false;
-    _twoFactor = prefs.getBool('twoFactor') ?? false;
     notifyListeners();
   }
 
@@ -78,21 +72,4 @@ class SettingsProvider with ChangeNotifier {
     await prefs.setBool('weeklySummary', value);
     notifyListeners();
   }
-
-  Future<void> setBiometric(bool value) async {
-    _biometric = value;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('biometric', value);
-    notifyListeners();
-  }
-
-  Future<void> setTwoFactor(bool value) async {
-    _twoFactor = value;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('twoFactor', value);
-    notifyListeners();
-  }
 }
-
-
-
