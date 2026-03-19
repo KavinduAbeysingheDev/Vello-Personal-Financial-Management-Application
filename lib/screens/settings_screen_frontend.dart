@@ -407,7 +407,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: isActive ? const Color(0xFF22C55E) : (isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280)), size: 26),
+          Icon(icon, color: isActive ? const Color(0xFF22C55E) : (isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280)), size: 22), // Reduced icon size
           const SizedBox(height: 4),
           Text(label, style: TextStyle(fontSize: 12, fontWeight: isActive ? FontWeight.bold : FontWeight.w500, color: isActive ? const Color(0xFF22C55E) : (isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280)))),
         ],
