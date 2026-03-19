@@ -50,12 +50,6 @@ class GmailDetectorService {
     }
   }
 
-  Future<bool> isEnabled() async {
-    final userId = FirebaseAuth.instance.currentUser?.uid ?? 'test_user';
-    final doc = await _firestore.collection('user_settings').doc(userId).get();
-    return doc.data()?['gmail_detector_enabled'] ?? false;
-  }
-
   Future<int> scanAndStore() async {
     _currentUser ??= await _googleSignIn.signInSilently();
     if (_currentUser == null) return 0;
