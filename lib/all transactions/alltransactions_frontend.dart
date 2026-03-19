@@ -14,56 +14,18 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
   static const Color _purple = Color(0xFF4F46E5);
 
   final List<Map<String, dynamic>> _transactions = [
-    {
-      'title': 'Salary',
-      'category': 'Income',
-      'date': 'Nov 20, 2025',
-      'amount': 5000.00,
-      'isExpense': false,
-    },
-    {
-      'title': 'Grocery Shopping',
-      'category': 'Food',
-      'date': 'Nov 19, 2025',
-      'amount': 150.00,
-      'isExpense': true,
-    },
-    {
-      'title': 'Netflix Subscription',
-      'category': 'Entertainment',
-      'date': 'Nov 18, 2025',
-      'amount': 15.99,
-      'isExpense': true,
-    },
-    {
-      'title': 'Gas',
-      'category': 'Transportation',
-      'date': 'Nov 17, 2025',
-      'amount': 60.00,
-      'isExpense': true,
-    },
-    {
-      'title': 'Freelance Project',
-      'category': 'Income',
-      'date': 'Nov 15, 2025',
-      'amount': 800.00,
-      'isExpense': false,
-    },
-    {
-      'title': 'Restaurant',
-      'category': 'Food',
-      'date': 'Nov 14, 2025',
-      'amount': 85.00,
-      'isExpense': true,
-    },
+    {'title': 'Salary', 'category': 'Income', 'date': 'Nov 20, 2025', 'amount': 5000.00, 'isExpense': false},
+    {'title': 'Grocery Shopping', 'category': 'Food', 'date': 'Nov 19, 2025', 'amount': 150.00, 'isExpense': true},
+    {'title': 'Netflix Subscription', 'category': 'Entertainment', 'date': 'Nov 18, 2025', 'amount': 15.99, 'isExpense': true},
+    {'title': 'Gas', 'category': 'Transportation', 'date': 'Nov 17, 2025', 'amount': 60.00, 'isExpense': true},
+    {'title': 'Freelance Project', 'category': 'Income', 'date': 'Nov 15, 2025', 'amount': 800.00, 'isExpense': false},
+    {'title': 'Restaurant', 'category': 'Food', 'date': 'Nov 14, 2025', 'amount': 85.00, 'isExpense': true},
   ];
 
   int _selectedNavIndex = 0;
 
   void _deleteTransaction(int index) {
-    setState(() {
-      _transactions.removeAt(index);
-    });
+    setState(() => _transactions.removeAt(index));
   }
 
   @override
@@ -71,7 +33,7 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF2F2F2),
 
-      // ── App Bar (matches Figma: solid teal, no logo icon, just "Vello" text) ──
+      // ── App Bar ────────────────────────────────────────────────────────────
       appBar: AppBar(
         backgroundColor: _teal,
         elevation: 0,
@@ -86,14 +48,8 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
           ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.menu, color: Colors.white, size: 26),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 26),
-            onPressed: () {},
-          ),
+          IconButton(icon: const Icon(Icons.menu, color: Colors.white, size: 24), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 24), onPressed: () {}),
         ],
       ),
 
@@ -104,14 +60,10 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
           Container(
             width: double.infinity,
             color: const Color(0xFFEFEFEF),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: const Text(
               'All Transactions',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF444444),
-              ),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF444444)),
             ),
           ),
 
@@ -138,13 +90,13 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
                       ),
                     ],
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                   child: Row(
                     children: [
-                      // ── Arrow circle icon ──────────────────────────────────
+                      // ── Arrow circle icon (smaller) ────────────────────────
                       Container(
-                        width: 48,
-                        height: 48,
+                        width: 38,
+                        height: 38,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: isExpense
@@ -158,15 +110,13 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
                           ),
                         ),
                         child: Icon(
-                          isExpense
-                              ? Icons.arrow_downward_rounded
-                              : Icons.arrow_upward_rounded,
+                          isExpense ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
                           color: isExpense ? _expenseRed : _incomeGreen,
-                          size: 26,
+                          size: 20,
                         ),
                       ),
 
-                      const SizedBox(width: 14),
+                      const SizedBox(width: 12),
 
                       // ── Title / Category / Date ────────────────────────────
                       Expanded(
@@ -176,26 +126,20 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
                             Text(
                               tx['title'] as String,
                               style: const TextStyle(
-                                fontSize: 17,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w700,
                                 color: Color(0xFF1A1A1A),
                               ),
                             ),
-                            const SizedBox(height: 3),
-                            Text(
-                              tx['category'] as String,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF888888),
-                              ),
-                            ),
                             const SizedBox(height: 2),
                             Text(
+                              tx['category'] as String,
+                              style: const TextStyle(fontSize: 12, color: Color(0xFF888888)),
+                            ),
+                            const SizedBox(height: 1),
+                            Text(
                               tx['date'] as String,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Color(0xFFAAAAAA),
-                              ),
+                              style: const TextStyle(fontSize: 11, color: Color(0xFFAAAAAA)),
                             ),
                           ],
                         ),
@@ -203,24 +147,20 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
 
                       // ── Amount ─────────────────────────────────────────────
                       Text(
-                        '${isExpense ? '-' : '+'}\$${amount.toStringAsFixed(2)}',
+                        '${isExpense ? "-" : "+"}\$${amount.toStringAsFixed(2)}',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: isExpense ? _expenseRed : _incomeGreen,
                         ),
                       ),
 
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
 
                       // ── Delete icon ────────────────────────────────────────
                       GestureDetector(
                         onTap: () => _deleteTransaction(index),
-                        child: const Icon(
-                          Icons.delete_outline,
-                          color: _expenseRed,
-                          size: 24,
-                        ),
+                        child: const Icon(Icons.delete_outline, color: _expenseRed, size: 20),
                       ),
                     ],
                   ),
@@ -235,8 +175,10 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
       bottomNavigationBar: BottomAppBar(
         color: Colors.white,
         elevation: 8,
+        notchMargin: 6,
+        shape: const CircularNotchedRectangle(),
         child: SizedBox(
-          height: 62,
+          height: 60,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -244,25 +186,30 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
                 icon: Icons.account_balance_wallet_outlined,
                 label: 'Home',
                 selected: _selectedNavIndex == 0,
+                selectedColor: _teal,
                 onTap: () => setState(() => _selectedNavIndex = 0),
               ),
               _NavItem(
                 icon: Icons.qr_code_scanner,
                 label: 'Scan',
                 selected: _selectedNavIndex == 1,
+                selectedColor: _teal,
                 onTap: () => setState(() => _selectedNavIndex = 1),
               ),
-              const SizedBox(width: 56),
+              // Space for FAB notch
+              const SizedBox(width: 48),
               _NavItem(
                 icon: Icons.calendar_today_outlined,
                 label: 'Events',
                 selected: _selectedNavIndex == 3,
+                selectedColor: _teal,
                 onTap: () => setState(() => _selectedNavIndex = 3),
               ),
               _NavItem(
                 icon: Icons.smart_toy_outlined,
                 label: 'AI',
                 selected: _selectedNavIndex == 4,
+                selectedColor: _teal,
                 onTap: () => setState(() => _selectedNavIndex = 4),
               ),
             ],
@@ -270,12 +217,13 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
         ),
       ),
 
-      // ── FAB (Add) ─────────────────────────────────────────────────────────
+      // ── FAB – proper purple circle with white + ───────────────────────────
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
         backgroundColor: _purple,
-        elevation: 4,
-        child: const Icon(Icons.add, color: Colors.white, size: 30),
+        shape: const CircleBorder(),
+        elevation: 6,
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
@@ -287,32 +235,30 @@ class _NavItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool selected;
+  final Color selectedColor;
   final VoidCallback onTap;
 
   const _NavItem({
     required this.icon,
     required this.label,
     required this.selected,
+    required this.selectedColor,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? const Color(0xFF00875A) : const Color(0xFF999999);
+    final color = selected ? selectedColor : const Color(0xFF999999);
     return GestureDetector(
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 3),
+          Icon(icon, color: color, size: 23),
+          const SizedBox(height: 2),
           Text(
             label,
-            style: TextStyle(
-              color: color,
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-            ),
+            style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w500),
           ),
         ],
       ),
