@@ -76,15 +76,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           elevation: 0,
           title: Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2EAF8D), // Lighter teal box
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(Icons.grass, color: Color(0xFFFFD700), size: 16), // Gold icon
-              ),
-              const SizedBox(width: 10),
               const Text(
                 'Vello',
                 style: TextStyle(
