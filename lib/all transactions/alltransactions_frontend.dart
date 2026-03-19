@@ -8,13 +8,11 @@ class AllTransactionsScreen extends StatefulWidget {
 }
 
 class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
-  // ── Teal brand colour (matches Figma header) ─────────────────────────────
   static const Color _teal = Color(0xFF00875A);
   static const Color _incomeGreen = Color(0xFF2ECC71);
   static const Color _expenseRed = Color(0xFFE74C3C);
   static const Color _purple = Color(0xFF4F46E5);
 
-  // ── Sample transaction data ───────────────────────────────────────────────
   final List<Map<String, dynamic>> _transactions = [
     {
       'title': 'Salary',
@@ -62,7 +60,6 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
 
   int _selectedNavIndex = 0;
 
-  // ── Delete a transaction ──────────────────────────────────────────────────
   void _deleteTransaction(int index) {
     setState(() {
       _transactions.removeAt(index);
@@ -74,45 +71,27 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF2F2F2),
 
-      // ── App Bar ────────────────────────────────────────────────────────────
+      // ── App Bar (matches Figma: solid teal, no logo icon, just "Vello" text) ──
       appBar: AppBar(
         backgroundColor: _teal,
         elevation: 0,
-        // Yellow-green logo + "Vello" title on left
-        titleSpacing: 0,
-        title: Row(
-          children: [
-            const SizedBox(width: 4),
-            Container(
-              width: 34,
-              height: 34,
-              decoration: BoxDecoration(
-                color: const Color(0xFF005C3B),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Center(
-                child: Icon(Icons.eco, color: Color(0xFFB5E853), size: 20),
-              ),
-            ),
-            const SizedBox(width: 10),
-            const Text(
-              'Vello',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ],
+        titleSpacing: 16,
+        title: const Text(
+          'Vello',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            letterSpacing: 0.5,
+          ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.menu, color: Colors.white),
+            icon: const Icon(Icons.menu, color: Colors.white, size: 26),
             onPressed: () {},
           ),
           IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Colors.white),
+            icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 26),
             onPressed: () {},
           ),
         ],
@@ -121,25 +100,25 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Sub-header strip ──────────────────────────────────────────────
+          // ── Sub-header ─────────────────────────────────────────────────────
           Container(
             width: double.infinity,
-            color: const Color(0xFFF0F0F0),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            color: const Color(0xFFEFEFEF),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
             child: const Text(
               'All Transactions',
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 15,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF555555),
+                color: Color(0xFF444444),
               ),
             ),
           ),
 
-          // ── Transaction list ──────────────────────────────────────────────
+          // ── Transaction List ───────────────────────────────────────────────
           Expanded(
             child: ListView.builder(
-              padding: EdgeInsets.zero,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               itemCount: _transactions.length,
               itemBuilder: (context, index) {
                 final tx = _transactions[index];
@@ -147,20 +126,25 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
                 final double amount = tx['amount'] as double;
 
                 return Container(
-                  decoration: const BoxDecoration(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  decoration: BoxDecoration(
                     color: Colors.white,
-                    border: Border(
-                      bottom: BorderSide(color: Color(0xFFEEEEEE), width: 1),
-                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
                   child: Row(
                     children: [
-                      // ── Arrow circle icon ────────────────────────────────
+                      // ── Arrow circle icon ──────────────────────────────────
                       Container(
-                        width: 40,
-                        height: 40,
+                        width: 48,
+                        height: 48,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: isExpense
@@ -168,8 +152,8 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
                               : _incomeGreen.withOpacity(0.12),
                           border: Border.all(
                             color: isExpense
-                                ? _expenseRed.withOpacity(0.4)
-                                : _incomeGreen.withOpacity(0.4),
+                                ? _expenseRed.withOpacity(0.5)
+                                : _incomeGreen.withOpacity(0.5),
                             width: 1.5,
                           ),
                         ),
@@ -178,13 +162,13 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
                               ? Icons.arrow_downward_rounded
                               : Icons.arrow_upward_rounded,
                           color: isExpense ? _expenseRed : _incomeGreen,
-                          size: 20,
+                          size: 26,
                         ),
                       ),
 
                       const SizedBox(width: 14),
 
-                      // ── Title / Category / Date ──────────────────────────
+                      // ── Title / Category / Date ────────────────────────────
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,16 +176,16 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
                             Text(
                               tx['title'] as String,
                               style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
                                 color: Color(0xFF1A1A1A),
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(height: 3),
                             Text(
                               tx['category'] as String,
                               style: const TextStyle(
-                                fontSize: 13,
+                                fontSize: 14,
                                 color: Color(0xFF888888),
                               ),
                             ),
@@ -209,7 +193,7 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
                             Text(
                               tx['date'] as String,
                               style: const TextStyle(
-                                fontSize: 11,
+                                fontSize: 12,
                                 color: Color(0xFFAAAAAA),
                               ),
                             ),
@@ -217,11 +201,11 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
                         ),
                       ),
 
-                      // ── Amount ───────────────────────────────────────────
+                      // ── Amount ─────────────────────────────────────────────
                       Text(
                         '${isExpense ? '-' : '+'}\$${amount.toStringAsFixed(2)}',
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: isExpense ? _expenseRed : _incomeGreen,
                         ),
@@ -229,13 +213,13 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
 
                       const SizedBox(width: 12),
 
-                      // ── Delete icon ──────────────────────────────────────
+                      // ── Delete icon ────────────────────────────────────────
                       GestureDetector(
                         onTap: () => _deleteTransaction(index),
                         child: const Icon(
                           Icons.delete_outline,
                           color: _expenseRed,
-                          size: 22,
+                          size: 24,
                         ),
                       ),
                     ],
@@ -247,12 +231,12 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
         ],
       ),
 
-      // ── Bottom Navigation Bar ──────────────────────────────────────────────
+      // ── Bottom Navigation Bar ─────────────────────────────────────────────
       bottomNavigationBar: BottomAppBar(
         color: Colors.white,
         elevation: 8,
         child: SizedBox(
-          height: 60,
+          height: 62,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -268,10 +252,7 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
                 selected: _selectedNavIndex == 1,
                 onTap: () => setState(() => _selectedNavIndex = 1),
               ),
-
-              // ── Centre FAB placeholder space ──────────────────────────
               const SizedBox(width: 56),
-
               _NavItem(
                 icon: Icons.calendar_today_outlined,
                 label: 'Events',
@@ -294,14 +275,14 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
         onPressed: () {},
         backgroundColor: _purple,
         elevation: 4,
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
+        child: const Icon(Icons.add, color: Colors.white, size: 30),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }
 
-// ── Helper widget for bottom nav items ────────────────────────────────────────
+// ── Bottom nav helper ─────────────────────────────────────────────────────────
 class _NavItem extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -323,13 +304,16 @@ class _NavItem extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 22),
-          const SizedBox(height: 2),
-          Text(label,
-              style: TextStyle(
-                  color: color,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500)),
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 3),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );
