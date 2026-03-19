@@ -146,7 +146,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.wb_sunny_outlined, color: Color(0xFF4B5563)),
-            title: const Text('Dark Mode', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: Color(0xFF1F2937))),
+            title: const Text('Dark Mode', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Color(0xFF1F2937))),
             subtitle: Text(_settingsProvider.isDarkMode ? 'Enabled' : 'Disabled', style: const TextStyle(color: Color(0xFF6B7280), fontSize: 13)),
             trailing: CupertinoSwitch(
               value: _settingsProvider.isDarkMode,
