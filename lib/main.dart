@@ -43,9 +43,7 @@ class _MainScreenState extends State<MainScreen> {
 
   late final List<Widget> _pages = [
     const PlaceholderPage(label: 'Home'),
-    BillScannerScreen(
-      onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
-    ),
+    const BillScannerScreen(),
     const PlaceholderPage(label: 'Events'),
     const PlaceholderPage(label: 'AI'),
   ];
@@ -56,14 +54,16 @@ class _MainScreenState extends State<MainScreen> {
       key: _scaffoldKey,
       drawer: _buildDrawer(context),
       body: _pages[_currentIndex],
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: const Color(0xFF3B5BDB),
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
-      ),
+      floatingActionButton: _currentIndex == 1
+          ? null
+          : FloatingActionButton(
+              onPressed: () {},
+              backgroundColor: const Color(0xFF3B5BDB),
+              shape: const CircleBorder(),
+              child: const Icon(Icons.add, color: Colors.white, size: 28),
+            ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
+      bottomNavigationBar: _currentIndex == 1 ? null : BottomAppBar(
         color: Colors.white,
         elevation: 8,
         shape: const CircularNotchedRectangle(),
@@ -235,26 +235,6 @@ class _MainScreenState extends State<MainScreen> {
                 },
               ),
             ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.settings_rounded,
-                  color: Color(0xFF00674F)),
-              title: const Text(
-                'Settings',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF111111),
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => const SettingsPage()),
-                );
-              },
-            ),
             const SizedBox(height: 8),
           ],
         ),
@@ -263,81 +243,6 @@ class _MainScreenState extends State<MainScreen> {
   }
 }
 
-class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF0FDF4),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF00674F),
-        title: const Text(
-          'Settings',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Auto Bill Detection',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF111111),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0x1A00674F)),
-              ),
-              child: Column(
-                children: [
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.email_rounded,
-                        color: Color(0xFF00674F)),
-                    title: const Text(
-                      'Email Bills',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: const Text('Auto-detect bills from Gmail'),
-                    trailing: const Icon(Icons.chevron_right_rounded,
-                        color: Color(0xFF6B7280)),
-                    onTap: () {},
-                  ),
-                  const Divider(),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.sms_rounded,
-                        color: Color(0xFF00674F)),
-                    title: const Text(
-                      'SMS Bills',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: const Text('Auto-detect bills from messages'),
-                    trailing: const Icon(Icons.chevron_right_rounded,
-                        color: Color(0xFF6B7280)),
-                    onTap: () {},
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class PlaceholderPage extends StatelessWidget {
   final String label;
