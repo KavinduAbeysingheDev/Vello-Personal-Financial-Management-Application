@@ -45,70 +45,31 @@ class _StatisticScreenState extends State<StatisticScreen>
     final slices = _service.getSlices(_selectedPeriod);
     final bars = _service.getBars(_selectedPeriod);
 
-    return Scaffold(
-      backgroundColor: _pageBg,
-      body: CustomScrollView(
-        slivers: [
-          _buildSliverHeader(),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 25),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildPeriodToggle(),
-                  const SizedBox(height: 35),
-                  _buildSectionTitle("Spending by Category"),
-                  const SizedBox(height: 15),
-                  _buildPieCard(
-                    slices,
-                  ), // Updated automatically when shared state changes
-                  const SizedBox(height: 40),
-                  _buildSectionTitle("Budget vs Actual Spending"),
-                  const SizedBox(height: 15),
-                  _buildBarCard(bars), // Updated automatically
-                  const SizedBox(height: 120),
-                ],
-              ),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 25),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildPeriodToggle(),
+                const SizedBox(height: 35),
+                _buildSectionTitle("Spending by Category"),
+                const SizedBox(height: 15),
+                _buildPieCard(slices),
+                const SizedBox(height: 40),
+                _buildSectionTitle("Budget vs Actual Spending"),
+                const SizedBox(height: 15),
+                _buildBarCard(bars),
+                const SizedBox(
+                  height: 140,
+                ), // Extra space for floating bottom bar
+              ],
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSliverHeader() {
-    return SliverAppBar(
-      expandedHeight: 120,
-      pinned: true,
-      backgroundColor: _gradLeft,
-      flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.only(left: 20, bottom: 20),
-        title: const Text(
-          "Statistics",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [_gradLeft, _gradRight],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-      ),
-      actions: [
-        IconButton(
-          onPressed: () {},
-          icon: const Icon(Icons.more_horiz, color: Colors.white),
-        ),
-        const SizedBox(width: 10),
-      ],
     );
   }
 
