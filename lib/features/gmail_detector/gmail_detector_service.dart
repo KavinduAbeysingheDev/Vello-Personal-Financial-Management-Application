@@ -33,22 +33,22 @@ class GmailDetectorService {
   bool get isSignedIn => _currentUser != null;
 
   Future<void> setEnabled(bool enabled) async {
-  final userId = FirebaseAuth.instance.currentUser?.uid ?? 'test_user';
-  await _firestore.collection('user_settings').doc(userId).set({
-    'gmail_detector_enabled': enabled,
-  }, SetOptions(merge: true));
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? 'test_user';
+    await _firestore.collection('user_settings').doc(userId).set({
+      'gmail_detector_enabled': enabled,
+    }, SetOptions(merge: true));
 
-  if (enabled) {
-    // Always force sign in dialog — don't use silent sign in
-    await _googleSignIn.signOut(); // clear cached account first
-    final signedIn = await signIn();
-    if (signedIn) {
-      await scanAndStore();
+    if (enabled) {
+      // Always force sign in dialog — don't use silent sign in
+      await _googleSignIn.signOut(); // clear cached account first
+      final signedIn = await signIn();
+      if (signedIn) {
+        await scanAndStore();
+      }
+    } else {
+      await signOut();
     }
-  } else {
-    await signOut();
   }
-}
 
   Future<bool> isEnabled() async {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? 'test_user';
@@ -62,9 +62,9 @@ class GmailDetectorService {
 
     final userId = FirebaseAuth.instance.currentUser?.uid ?? 'test_user';
 
+    final authHeaders = await _currentUser!.authHeaders;
+    final client = _AuthenticatedClient(authHeaders);
     try {
-      final authHeaders = await _currentUser!.authHeaders;
-      final client = _AuthenticatedClient(authHeaders);
       final gmailApi = gmail.GmailApi(client);
 
       final query = 'category:purchases newer_than:30d';
@@ -75,10 +75,7 @@ class GmailDetectorService {
         maxResults: 50,
       );
 
-      if (messages.messages == null) {
-        client.close();
-        return 0;
-      }
+      if (messages.messages == null) return 0;
 
       int savedCount = 0;
 
@@ -111,11 +108,12 @@ class GmailDetectorService {
         }
       }
 
-      client.close();
       return savedCount;
     } catch (e) {
       debugPrint('Gmail Scan Error: $e');
       return 0;
+    } finally {
+      client.close();
     }
   }
 
