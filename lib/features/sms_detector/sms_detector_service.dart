@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -124,15 +124,16 @@ class SmsDetectorService {
     }
   }
 
+  static final _amountPatterns = [
+    RegExp(r'(?:LKR|Rs\.?|රු\.?)\s*([0-9,]+(?:\.[0-9]{1,2})?)',
+        caseSensitive: false),
+    RegExp(r'(?:amount|paid|charged|debit|credit)[^\d]*([0-9,]+(?:\.[0-9]{1,2})?)',
+        caseSensitive: false),
+    RegExp(r'\b([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2}))\b'),
+  ];
+
   double? _extractAmount(String text) {
-    final patterns = [
-      RegExp(r'(?:LKR|Rs\.?|රු\.?)\s*([0-9,]+(?:\.[0-9]{1,2})?)',
-          caseSensitive: false),
-      RegExp(r'(?:amount|paid|charged|debit|credit)[^\d]*([0-9,]+(?:\.[0-9]{1,2})?)',
-          caseSensitive: false),
-      RegExp(r'\b([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2}))\b'),
-    ];
-    for (final pattern in patterns) {
+    for (final pattern in _amountPatterns) {
       final match = pattern.firstMatch(text);
       if (match != null) {
         final raw = match.group(1)!.replaceAll(',', '');
