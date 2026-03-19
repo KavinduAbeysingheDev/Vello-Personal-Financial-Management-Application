@@ -41,7 +41,7 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 1;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  late final List<Widget> _pages = [
+  final List<Widget> _pages = [
     const PlaceholderPage(label: 'Home'),
     const BillScannerScreen(),
     const PlaceholderPage(label: 'Events'),
