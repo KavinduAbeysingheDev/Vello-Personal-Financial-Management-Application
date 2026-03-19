@@ -101,7 +101,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   color: Colors.white.withOpacity(0.35), // Clear circle background
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.settings, color: Colors.white, size: 20),
+                child: const Icon(Icons.settings_outlined, color: Colors.white, size: 20),
               ),
             ),
           ],
