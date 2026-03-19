@@ -117,7 +117,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const Text(
           'Settings',
           style: TextStyle(
-            fontSize: 32, // Matches Figma
+            fontSize: 26, // Reduced font size per user request
             fontWeight: FontWeight.w800,
             color: Color(0xFF111827),
             letterSpacing: -0.5,
