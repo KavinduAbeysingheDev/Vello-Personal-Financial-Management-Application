@@ -62,8 +62,7 @@ class GmailDetectorService {
 
     final userId = FirebaseAuth.instance.currentUser?.uid ?? 'test_user';
 
-    final authHeaders = await _currentUser!.authHeaders;
-    final client = _AuthenticatedClient(authHeaders);
+    final client = _AuthenticatedClient(await _currentUser!.authHeaders);
     try {
       final gmailApi = gmail.GmailApi(client);
 
@@ -80,6 +79,7 @@ class GmailDetectorService {
       int savedCount = 0;
 
       for (final msg in messages.messages!.take(20)) {
+        if (msg.id == null) continue;
         final detail = await gmailApi.users.messages.get('me', msg.id!);
         final extracted = _extractBillData(detail);
 
@@ -119,7 +119,6 @@ class GmailDetectorService {
 
   Map<String, dynamic>? _extractBillData(gmail.Message message) {
     String subject = '';
-    String body = '';
 
     final headers = message.payload?.headers ?? [];
     for (final header in headers) {
@@ -128,7 +127,7 @@ class GmailDetectorService {
       }
     }
 
-    body = _getBody(message.payload);
+    final body = _getBody(message.payload);
 
     final amount = _extractAmount(body.isNotEmpty ? body : subject);
     if (amount == null) return null;
@@ -201,20 +200,21 @@ class GmailDetectorService {
     }
   }
 
+  static final _amountPatterns = [
+    RegExp(
+      r'(?:LKR|Rs\.?|රු\.?)\s*([0-9,]+(?:\.[0-9]{1,2})?)',
+      caseSensitive: false,
+    ),
+    RegExp(
+      r'(?:total|amount\s*due|net\s*amount|grand\s*total|payable)[^\d]*([0-9,]+(?:\.[0-9]{1,2})?)',
+      caseSensitive: false,
+    ),
+    RegExp(r'\b([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2}))\b'),
+  ];
+
   double? _extractAmount(String text) {
     if (text.isEmpty) return null;
-    final patterns = [
-      RegExp(
-        r'(?:LKR|Rs\.?|රු\.?)\s*([0-9,]+(?:\.[0-9]{1,2})?)',
-        caseSensitive: false,
-      ),
-      RegExp(
-        r'(?:total|amount\s*due|net\s*amount|grand\s*total|payable)[^\d]*([0-9,]+(?:\.[0-9]{1,2})?)',
-        caseSensitive: false,
-      ),
-      RegExp(r'\b([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2}))\b'),
-    ];
-    for (final pattern in patterns) {
+    for (final pattern in _amountPatterns) {
       final match = pattern.firstMatch(text);
       if (match != null) {
         final raw = match.group(1)!.replaceAll(',', '');
