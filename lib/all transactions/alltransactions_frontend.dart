@@ -22,7 +22,7 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
     {'title': 'Restaurant', 'category': 'Food', 'date': 'Nov 14, 2025', 'amount': 85.00, 'isExpense': true},
   ];
 
-  int _selectedNavIndex = 0;
+  int _selectedNavIndex = -1;
 
   void _deleteTransaction(int index) {
     setState(() => _transactions.removeAt(index));
@@ -96,8 +96,8 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
                     children: [
                       // ── Arrow circle icon ──────────────────────────────────
                       Container(
-                        width: 36,
-                        height: 36,
+                        width: 28,
+                        height: 28,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: isExpense
@@ -107,13 +107,13 @@ class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
                             color: isExpense
                                 ? _expenseRed.withOpacity(0.5)
                                 : _incomeGreen.withOpacity(0.5),
-                            width: 1.5,
+                            width: 1.2,
                           ),
                         ),
                         child: Icon(
                           isExpense ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
                           color: isExpense ? _expenseRed : _incomeGreen,
-                          size: 18,
+                          size: 14,
                         ),
                       ),
 
