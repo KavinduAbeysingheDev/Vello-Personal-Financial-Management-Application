@@ -39,7 +39,6 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 1;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final List<Widget> _pages = [
     const PlaceholderPage(label: 'Home'),
@@ -51,7 +50,6 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
       drawer: _buildDrawer(context),
       body: _pages[_currentIndex],
       floatingActionButton: _currentIndex == 1
