@@ -27,6 +27,9 @@ dependencies:
   firebase_auth: ^5.3.1
   cloud_firestore: ^5.4.4
 
+  #SMS
+  flutter_sms_inbox: ^1.0.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
