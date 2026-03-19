@@ -196,7 +196,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               Text(
                                 lang['name']!,
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 15, // Reduced from 16
                                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                                   color: const Color(0xFF1F2937),
                                 ),
@@ -286,12 +286,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (icon != null) {
       return Row(
         children: [
-          Icon(icon, color: const Color(0xFF111827), size: 20),
+          Icon(icon, color: const Color(0xFF111827), size: 18), // Reduced size
           const SizedBox(width: 8),
           Text(
             title,
             style: const TextStyle(
-              fontSize: 18,
+              fontSize: 15, // Reduced from 18
               fontWeight: FontWeight.w700,
               color: Color(0xFF111827),
               letterSpacing: 0.3,
@@ -303,7 +303,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Text(
       title,
       style: const TextStyle(
-        fontSize: 18,
+        fontSize: 15, // Reduced from 18
         fontWeight: FontWeight.w700,
         color: Color(0xFF111827),
         letterSpacing: 0.3,
@@ -339,7 +339,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }) {
     return ListTile(
       leading: icon != null ? Icon(icon, color: const Color(0xFF374151)) : null,
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: Color(0xFF1F2937))),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Color(0xFF1F2937))), // Reduced from 16
       subtitle: Text(subtitle, style: const TextStyle(color: Color(0xFF6B7280), fontSize: 13), maxLines: 2),
       trailing: CupertinoSwitch(
         value: value,
