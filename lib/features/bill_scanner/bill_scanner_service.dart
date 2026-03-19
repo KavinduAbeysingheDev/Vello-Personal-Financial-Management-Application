@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
@@ -217,9 +216,9 @@ Respond with ONLY the number or NOT_FOUND. Nothing else.
 
   // ─── OCR Fallback ─────────────────────────────────────────────
   String _ocrFallback(String text) {
-    RegExp amountRegExp = RegExp(r'\d{1,3}(?:,\s*\d{3})*(?:\.\s*\d{1,2})?');
-    List<String> lines = text.split('\n');
-    List<String> keywords = [
+    final amountRegExp = RegExp(r'\d{1,3}(?:,\s*\d{3})*(?:\.\s*\d{1,2})?');
+    final lines = text.split('\n');
+    final keywords = [
       'net amount', 'net total', 'grand total', 'total', 'payable',
       'මුළු', 'මුලු', 'එකතුව', 'ගෙවිය යුතු', 'සේවිය යුතු'
     ];
@@ -242,8 +241,8 @@ Respond with ONLY the number or NOT_FOUND. Nothing else.
       }
     }
 
-    List<double> allAmounts = [];
-    for (String line in lines) {
+    final List<double> allAmounts = [];
+    for (final line in lines) {
       for (var m in amountRegExp.allMatches(line)) {
         double? val = double.tryParse(
             m.group(0)!.replaceAll(' ', '').replaceAll(',', ''));
@@ -251,7 +250,7 @@ Respond with ONLY the number or NOT_FOUND. Nothing else.
       }
     }
 
-    List<double> roundNumbers =
+    final roundNumbers =
         allAmounts.where((v) => v % 100 == 0 && v >= 100).toList();
 
     if (roundNumbers.isNotEmpty && allAmounts.length >= 2) {
