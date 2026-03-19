@@ -8,206 +8,328 @@ class AllTransactionsScreen extends StatefulWidget {
 }
 
 class _AllTransactionsScreenState extends State<AllTransactionsScreen> {
-  String _selectedFilter = 'All';
+  // ── Teal brand colour (matches Figma header) ─────────────────────────────
+  static const Color _teal = Color(0xFF00875A);
+  static const Color _incomeGreen = Color(0xFF2ECC71);
+  static const Color _expenseRed = Color(0xFFE74C3C);
+  static const Color _purple = Color(0xFF4F46E5);
 
+  // ── Sample transaction data ───────────────────────────────────────────────
   final List<Map<String, dynamic>> _transactions = [
     {
       'title': 'Salary',
       'category': 'Income',
-      'date': 'Today, 10:00 AM',
+      'date': 'Nov 20, 2025',
       'amount': 5000.00,
       'isExpense': false,
-      'icon': Icons.account_balance_wallet,
     },
     {
-      'title': 'Groceries',
+      'title': 'Grocery Shopping',
       'category': 'Food',
-      'date': 'Today, 08:30 AM',
-      'amount': 120.50,
+      'date': 'Nov 19, 2025',
+      'amount': 150.00,
       'isExpense': true,
-      'icon': Icons.shopping_cart,
     },
     {
       'title': 'Netflix Subscription',
       'category': 'Entertainment',
-      'date': 'Yesterday',
+      'date': 'Nov 18, 2025',
       'amount': 15.99,
       'isExpense': true,
-      'icon': Icons.movie,
     },
     {
-      'title': 'Freelance Client',
+      'title': 'Gas',
+      'category': 'Transportation',
+      'date': 'Nov 17, 2025',
+      'amount': 60.00,
+      'isExpense': true,
+    },
+    {
+      'title': 'Freelance Project',
       'category': 'Income',
-      'date': 'Yesterday',
-      'amount': 850.00,
+      'date': 'Nov 15, 2025',
+      'amount': 800.00,
       'isExpense': false,
-      'icon': Icons.work,
     },
     {
-      'title': 'Electricity Bill',
-      'category': 'Utilities',
-      'date': 'Oct 12',
-      'amount': 65.20,
+      'title': 'Restaurant',
+      'category': 'Food',
+      'date': 'Nov 14, 2025',
+      'amount': 85.00,
       'isExpense': true,
-      'icon': Icons.electric_bolt,
-    },
-    {
-      'title': 'Coffee Shop',
-      'category': 'Food & Drinks',
-      'date': 'Oct 11',
-      'amount': 5.50,
-      'isExpense': true,
-      'icon': Icons.local_cafe,
     },
   ];
 
+  int _selectedNavIndex = 0;
+
+  // ── Delete a transaction ──────────────────────────────────────────────────
+  void _deleteTransaction(int index) {
+    setState(() {
+      _transactions.removeAt(index);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Filter the transactions based on the selected chip
-    final filteredTransactions = _selectedFilter == 'All'
-        ? _transactions
-        : _transactions.where((t) => 
-            (_selectedFilter == 'Income' && !t['isExpense']) || 
-            (_selectedFilter == 'Expense' && t['isExpense'])).toList();
-
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF2F2F2),
+
+      // ── App Bar ────────────────────────────────────────────────────────────
       appBar: AppBar(
-        title: const Text('All Transactions', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18)),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        backgroundColor: _teal,
         elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-          onPressed: () => Navigator.pop(context),
+        // Yellow-green logo + "Vello" title on left
+        titleSpacing: 0,
+        title: Row(
+          children: [
+            const SizedBox(width: 4),
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: const Color(0xFF005C3B),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Icon(Icons.eco, color: Color(0xFFB5E853), size: 20),
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'Vello',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: const Icon(Icons.menu, color: Colors.white),
             onPressed: () {},
           ),
           IconButton(
-            icon: const Icon(Icons.filter_list),
+            icon: const Icon(Icons.settings_outlined, color: Colors.white),
             onPressed: () {},
           ),
         ],
       ),
+
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Filter Tabs (All, Income, Expense)
+          // ── Sub-header strip ──────────────────────────────────────────────
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            color: Colors.white,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: ['All', 'Income', 'Expense'].map((filter) {
-                  final isSelected = _selectedFilter == filter;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: ChoiceChip(
-                      label: Text(filter),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        setState(() {
-                          _selectedFilter = filter;
-                        });
-                      },
-                      selectedColor: const Color(0xFF0D9488),
-                      showCheckmark: false,
-                      labelStyle: TextStyle(
-                        color: isSelected ? Colors.white : Colors.black87,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                      ),
-                      backgroundColor: Colors.grey[100],
-                      side: BorderSide.none,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                  );
-                }).toList(),
+            width: double.infinity,
+            color: const Color(0xFFF0F0F0),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: const Text(
+              'All Transactions',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF555555),
               ),
             ),
           ),
-          
-          // Transactions List section
-          Expanded(
-            child: Container(
-              color: const Color(0xFFF8F9FA),
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                itemCount: filteredTransactions.length,
-                itemBuilder: (context, index) {
-                  final transaction = filteredTransactions[index];
-                  final isExpense = transaction['isExpense'] as bool;
 
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 12.0),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.02),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+          // ── Transaction list ──────────────────────────────────────────────
+          Expanded(
+            child: ListView.builder(
+              padding: EdgeInsets.zero,
+              itemCount: _transactions.length,
+              itemBuilder: (context, index) {
+                final tx = _transactions[index];
+                final bool isExpense = tx['isExpense'] as bool;
+                final double amount = tx['amount'] as double;
+
+                return Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    border: Border(
+                      bottom: BorderSide(color: Color(0xFFEEEEEE), width: 1),
                     ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                      leading: Container(
-                        padding: const EdgeInsets.all(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 14),
+                  child: Row(
+                    children: [
+                      // ── Arrow circle icon ────────────────────────────────
+                      Container(
+                        width: 40,
+                        height: 40,
                         decoration: BoxDecoration(
-                          color: isExpense ? Colors.red.withOpacity(0.1) : const Color(0xFF0D9488).withOpacity(0.1),
                           shape: BoxShape.circle,
+                          color: isExpense
+                              ? _expenseRed.withOpacity(0.12)
+                              : _incomeGreen.withOpacity(0.12),
+                          border: Border.all(
+                            color: isExpense
+                                ? _expenseRed.withOpacity(0.4)
+                                : _incomeGreen.withOpacity(0.4),
+                            width: 1.5,
+                          ),
                         ),
                         child: Icon(
-                          transaction['icon'] as IconData,
-                          color: isExpense ? Colors.red[600] : const Color(0xFF0D9488),
-                          size: 24,
+                          isExpense
+                              ? Icons.arrow_downward_rounded
+                              : Icons.arrow_upward_rounded,
+                          color: isExpense ? _expenseRed : _incomeGreen,
+                          size: 20,
                         ),
                       ),
-                      title: Text(
-                        transaction['title'] as String,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 4.0),
-                        child: Text(
-                          '${transaction['category']} • ${transaction['date']}',
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                      trailing: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            '${isExpense ? '-' : '+'}\$${transaction['amount'].toStringAsFixed(2)}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: isExpense ? Colors.black87 : const Color(0xFF0D9488),
+
+                      const SizedBox(width: 14),
+
+                      // ── Title / Category / Date ──────────────────────────
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              tx['title'] as String,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF1A1A1A),
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 2),
+                            Text(
+                              tx['category'] as String,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF888888),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              tx['date'] as String,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFFAAAAAA),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                },
-              ),
+
+                      // ── Amount ───────────────────────────────────────────
+                      Text(
+                        '${isExpense ? '-' : '+'}\$${amount.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: isExpense ? _expenseRed : _incomeGreen,
+                        ),
+                      ),
+
+                      const SizedBox(width: 12),
+
+                      // ── Delete icon ──────────────────────────────────────
+                      GestureDetector(
+                        onTap: () => _deleteTransaction(index),
+                        child: const Icon(
+                          Icons.delete_outline,
+                          color: _expenseRed,
+                          size: 22,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
+        ],
+      ),
+
+      // ── Bottom Navigation Bar ──────────────────────────────────────────────
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.white,
+        elevation: 8,
+        child: SizedBox(
+          height: 60,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _NavItem(
+                icon: Icons.account_balance_wallet_outlined,
+                label: 'Home',
+                selected: _selectedNavIndex == 0,
+                onTap: () => setState(() => _selectedNavIndex = 0),
+              ),
+              _NavItem(
+                icon: Icons.qr_code_scanner,
+                label: 'Scan',
+                selected: _selectedNavIndex == 1,
+                onTap: () => setState(() => _selectedNavIndex = 1),
+              ),
+
+              // ── Centre FAB placeholder space ──────────────────────────
+              const SizedBox(width: 56),
+
+              _NavItem(
+                icon: Icons.calendar_today_outlined,
+                label: 'Events',
+                selected: _selectedNavIndex == 3,
+                onTap: () => setState(() => _selectedNavIndex = 3),
+              ),
+              _NavItem(
+                icon: Icons.smart_toy_outlined,
+                label: 'AI',
+                selected: _selectedNavIndex == 4,
+                onTap: () => setState(() => _selectedNavIndex = 4),
+              ),
+            ],
+          ),
+        ),
+      ),
+
+      // ── FAB (Add) ─────────────────────────────────────────────────────────
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        backgroundColor: _purple,
+        elevation: 4,
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+    );
+  }
+}
+
+// ── Helper widget for bottom nav items ────────────────────────────────────────
+class _NavItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _NavItem({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = selected ? const Color(0xFF00875A) : const Color(0xFF999999);
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 22),
+          const SizedBox(height: 2),
+          Text(label,
+              style: TextStyle(
+                  color: color,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500)),
         ],
       ),
     );
