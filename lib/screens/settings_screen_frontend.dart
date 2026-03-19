@@ -264,7 +264,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: _buildSectionTitle('Notifications', Icons.notifications_none),
           ),
           _buildSwitchTile(
-            icon: Icons.notifications_none, // Fix per Figma
             title: 'Budget Alerts',
             subtitle: 'Get notified when approaching budget limits',
             value: _settingsProvider.budgetAlerts,
@@ -272,7 +271,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const Divider(height: 1, color: Color(0xFFF3F4F6), indent: 16, endIndent: 16),
           _buildSwitchTile(
-            icon: Icons.insert_chart_outlined, // Fix per Figma
             title: 'Weekly Summary',
             subtitle: 'Receive weekly spending summaries',
             value: _settingsProvider.weeklySummary,
@@ -333,14 +331,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSwitchTile({
-    required IconData icon,
+    IconData? icon,
     required String title,
     required String subtitle,
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
     return ListTile(
-      leading: Icon(icon, color: const Color(0xFF374151)),
+      leading: icon != null ? Icon(icon, color: const Color(0xFF374151)) : null,
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: Color(0xFF1F2937))),
       subtitle: Text(subtitle, style: const TextStyle(color: Color(0xFF6B7280), fontSize: 13), maxLines: 2),
       trailing: CupertinoSwitch(
