@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'bill_scanner_service.dart';
-import 'package:vello_app/main.dart';
 
 class _C {
   static const primary         = Color(0xFF00674F);
@@ -22,8 +21,7 @@ class _R {
 }
 
 class BillScannerScreen extends StatefulWidget {
-  final VoidCallback? onMenuTap;
-  const BillScannerScreen({super.key, this.onMenuTap});
+  const BillScannerScreen({super.key});
 
   @override
   State<BillScannerScreen> createState() => _BillScannerScreenState();
@@ -92,56 +90,9 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _C.background,
-      appBar: _buildAppBar(),
-      body: _buildBody(),
+      body: SafeArea(child: _buildBody()),
     );
   }
-
-  PreferredSizeWidget _buildAppBar() => AppBar(
-        backgroundColor: _C.primary,
-        elevation: 0,
-        titleSpacing: 0,
-        title: Row(
-          children: [
-            const SizedBox(width: 12),
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.eco_rounded, color: Colors.amber, size: 20),
-            ),
-            const SizedBox(width: 10),
-            const Text(
-              'Vello',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.2,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          Builder(
-            builder: (ctx) => IconButton(
-              icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 24),
-              onPressed: () => Scaffold.of(ctx).openDrawer(),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings_rounded, color: Colors.white, size: 22),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const SettingsPage()),
-            ),
-          ),
-          const SizedBox(width: 4),
-        ],
-      );
 
   Widget _buildBody() => SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
