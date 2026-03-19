@@ -22,7 +22,7 @@ class AllTransactionsScreen extends StatelessWidget {
         titleSpacing: 16,
         title: const Text(
           'Vello',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 22),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.normal, fontSize: 22),
         ),
         actions: [
           IconButton(icon: const Icon(Icons.menu, color: Colors.white, size: 24), onPressed: () {}),
@@ -118,7 +118,7 @@ class AllTransactionsScreen extends StatelessWidget {
                                     children: [
                                       Text(tx.title,
                                           style: const TextStyle(
-                                              fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1A1A1A))),
+                                              fontSize: 13, fontWeight: FontWeight.normal, color: Color(0xFF1A1A1A))),
                                       const SizedBox(height: 2),
                                       Text(tx.category,
                                           style: const TextStyle(fontSize: 11, color: Color(0xFF888888))),
@@ -134,7 +134,7 @@ class AllTransactionsScreen extends StatelessWidget {
                                   amountStr,
                                   style: TextStyle(
                                       fontSize: 12,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: FontWeight.normal,
                                       color: isExpense ? _expenseRed : _incomeGreen),
                                 ),
                                 const SizedBox(width: 8),
@@ -280,7 +280,7 @@ class _BottomNavState extends State<_BottomNav> {
           _NavItem(icon: Icons.calendar_today_outlined, label: 'Events',
               selected: _selected == 3, selectedColor: _teal,
               onTap: () => setState(() => _selected = 3)),
-          _NavItem(icon: Icons.auto_awesome_outlined, label: 'AI',
+          _NavItem(icon: Icons.work_outline, label: 'AI',
               selected: _selected == 4, selectedColor: _teal,
               onTap: () => setState(() => _selected = 4)),
         ],
