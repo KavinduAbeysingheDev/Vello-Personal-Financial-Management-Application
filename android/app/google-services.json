@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "653322528670",
+    "project_id": "vello-application",
+    "storage_bucket": "vello-application.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:653322528670:android:c3e38f6463c8c6de4f188f",
+        "android_client_info": {
+          "package_name": "com.example.vello_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-WcoDap-5SuiqR3QZEcPj3cDEoyLpcQg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
