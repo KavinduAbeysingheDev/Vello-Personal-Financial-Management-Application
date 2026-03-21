@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'features/bill_scanner/bill_scanner_screen.dart';
+import 'features/gmail_detector/gmail_detector_service.dart';
+import 'features/sms_detector/sms_detector_service.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -37,8 +39,34 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   int _currentIndex = 1;
+  final _gmailService = GmailDetectorService();
+  final _smsService = SmsDetectorService();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _gmailService.isEnabled().then((enabled) {
+        if (enabled) _gmailService.scanAndStore().catchError((_) => 0);
+      }).catchError((_) {});
+      _smsService.isEnabled().then((enabled) {
+        if (enabled) _smsService.scanAndStore().catchError((_) => 0);
+      }).catchError((_) {});
+    }
+  }
 
   final List<Widget> _pages = [
     const PlaceholderPage(label: 'Home'),
