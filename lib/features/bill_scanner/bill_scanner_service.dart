@@ -1,26 +1,41 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
+import 'bill_parser.dart';
+
+// Re-export model types so callers only need this one import.
+export 'bill_parser.dart' show BillItem, BillScanResult;
 
 class BillScannerService {
   final ImagePicker _picker = ImagePicker();
   final _textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
-  static const String _groqApiKey = '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';
+  final BillParser _parser = BillParser();
+  final http.Client _httpClient;
 
-  Future<String?> scanAndGetAmount() async {
+  static String get _groqApiKey => dotenv.env['GROQ_API_KEY'] ?? '';
+
+  BillScannerService({http.Client? httpClient})
+      : _httpClient = httpClient ?? http.Client();
+
+  // ─── Camera Scan (Single) ──────────────────────────────────────
+  Future<BillScanResult?> scanAndGetAmount() async {
     final XFile? image = await _picker.pickImage(
       source: ImageSource.camera,
       imageQuality: 100,
     );
     if (image == null) return null;
-    return await _processImage(image.path, source: 'Camera');
+    return _processImage(image.path, source: 'Camera');
   }
 
-  Future<String?> scanMultiplePhotos(BuildContext context) async {
-    List<String> imagePaths = [];
+  // ─── Camera Scan (Multi-photo) ─────────────────────────────────
+  Future<BillScanResult?> scanMultiplePhotos({
+    required Future<bool?> Function(int photoCount) onAddMore,
+  }) async {
+    final List<String> imagePaths = [];
 
     while (true) {
       final XFile? image = await _picker.pickImage(
@@ -31,40 +46,16 @@ class BillScannerService {
 
       imagePaths.add(image.path);
 
-      if (!context.mounted) break;
-
-      final addMore = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Photo Added!', style: TextStyle(fontWeight: FontWeight.w700)),
-          content: Text('${imagePaths.length} photo(s) captured. Add another?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Done'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00674F),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-              child: const Text('Add Photo'),
-            ),
-          ],
-        ),
-      );
-
+      final addMore = await onAddMore(imagePaths.length);
       if (addMore != true) break;
     }
 
     if (imagePaths.isEmpty) return null;
-    return await _processMultipleImages(imagePaths);
+    return _processMultipleImages(imagePaths);
   }
 
-  Future<String?> scanFromGallery() async {
+  // ─── Gallery Upload ────────────────────────────────────────────
+  Future<BillScanResult?> scanFromGallery() async {
     final status = await Permission.photos.request();
     if (status.isPermanentlyDenied) {
       await openAppSettings();
@@ -77,48 +68,55 @@ class BillScannerService {
       imageQuality: 100,
     );
     if (image == null) return null;
-    return await _processImage(image.path, source: 'Gallery');
+    return _processImage(image.path, source: 'Gallery');
   }
 
-  Future<String?> _processMultipleImages(List<String> imagePaths) async {
-    String mergedText = '';
+  // ─── Process Multiple Images ───────────────────────────────────
+  Future<BillScanResult?> _processMultipleImages(
+      List<String> imagePaths) async {
+    final mergedBuffer = StringBuffer();
     for (int i = 0; i < imagePaths.length; i++) {
       final inputImage = InputImage.fromFilePath(imagePaths[i]);
-      final RecognizedText recognizedText = await _textRecognizer.processImage(inputImage);
-      String pageText = '';
-      for (TextBlock block in recognizedText.blocks) {
-        for (TextLine line in block.lines) {
-          pageText += '${line.text}\n';
+      final recognizedText = await _textRecognizer.processImage(inputImage);
+      for (final block in recognizedText.blocks) {
+        for (final line in block.lines) {
+          mergedBuffer.write(line.text);
+          mergedBuffer.write('\n');
         }
       }
-      mergedText += pageText;
     }
-    if (mergedText.trim().isEmpty) return "Could not read bill";
-    return await _extractAmountWithDeepseek(mergedText);
+    final mergedText = mergedBuffer.toString();
+    if (mergedText.trim().isEmpty) return null;
+    return _extractItemsWithGroq(mergedText);
   }
 
-  Future<String?> _processImage(String imagePath, {String source = ''}) async {
+  // ─── Shared Image Processing ───────────────────────────────────
+  Future<BillScanResult?> _processImage(String imagePath,
+      {String source = ''}) async {
     final inputImage = InputImage.fromFilePath(imagePath);
-    final RecognizedText recognizedText = await _textRecognizer.processImage(inputImage);
+    final recognizedText = await _textRecognizer.processImage(inputImage);
 
-    String rawText = '';
-    for (TextBlock block in recognizedText.blocks) {
-      for (TextLine line in block.lines) {
-        rawText += '${line.text}\n';
+    final rawBuffer = StringBuffer();
+    for (final block in recognizedText.blocks) {
+      for (final line in block.lines) {
+        rawBuffer.write(line.text);
+        rawBuffer.write('\n');
       }
     }
+    final rawText = rawBuffer.toString();
 
-    debugPrint("---------- OCR RAW OUTPUT ($source) ----------");
+    debugPrint('---------- OCR RAW OUTPUT ($source) ----------');
     debugPrint(rawText);
-    debugPrint("----------------------------------------------");
+    debugPrint('----------------------------------------------');
 
-    if (rawText.trim().isEmpty) return "Could not read bill";
-    return await _extractAmountWithDeepseek(rawText);
+    if (rawText.trim().isEmpty) return null;
+    return _extractItemsWithGroq(rawText);
   }
 
-  Future<String?> _extractAmountWithDeepseek(String ocrText) async {
+  // ─── Groq Extraction ───────────────────────────────────────────
+  Future<BillScanResult?> _extractItemsWithGroq(String ocrText) async {
     try {
-      final response = await http.post(
+      final response = await _httpClient.post(
         Uri.parse('https://api.groq.com/openai/v1/chat/completions'),
         headers: {
           'Content-Type': 'application/json',
@@ -129,104 +127,62 @@ class BillScannerService {
           'messages': [
             {
               'role': 'user',
-              'content': '''
-You are a Sri Lankan bill/receipt parser. Extract the final net payable amount.
+              'content': '''You are a Sri Lankan bill/receipt parser. Extract all individual line items and the final payable total.
 
 IMPORTANT: OCR text may have garbled Sinhala labels. Numbers will still be present.
 
-=== KEYWORDS TO LOOK FOR ===
-English: NET AMOUNT, NET TOTAL, TOTAL, GRAND TOTAL, AMOUNT DUE, PAYABLE
-Sinhala: මුළු මුදල, මුලු, එකතුව, ගෙවිය යුතු, සම්පූර්ණ මුදල
+Return ONLY a valid JSON object — no markdown, no explanation:
+{"items": [{"name": "Item Name", "price": 99.99}], "total": 123.45}
 
-=== POSITION PATTERN (if keywords missing) ===
-Sri Lankan receipts:
-  [item prices...]
-  TOTAL AMOUNT   <- amount customer pays
-  CASH GIVEN     <- round number (500, 1000, 2000, 5000)
-  BALANCE/CHANGE <- difference
+Rules for items:
+- Only individual purchased items (product name + its unit price)
+- Skip rows like TOTAL, SUBTOTAL, TAX, DISCOUNT, CASH GIVEN, BALANCE, CHANGE
+- Use clean readable names (fix obvious OCR garbling)
+- Prices must be positive numbers
 
-=== RULES ===
-- Return ONLY the numeric value. Example: 593.36
-- Do NOT return cash given or balance/change
-- Remove commas (1,000.00 -> 1000.00)
-- If cannot determine: return NOT_FOUND
+Rules for total:
+- total = the final NET PAYABLE amount the customer paid
+- NOT the cash given amount, NOT the balance/change
+- If unsure, compute sum of item prices
 
-=== OCR TEXT ===
+OCR TEXT:
 $ocrText
 
-Respond with ONLY the number or NOT_FOUND.
-'''
+Respond with ONLY the JSON object.''',
             }
           ],
-          'max_tokens': 50,
+          'max_tokens': 600,
         }),
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        String? result = data['choices'][0]['message']['content']?.trim();
-        debugPrint("Groq Response: $result");
-
-        if (result == null || result == 'NOT_FOUND') return "Amount not found";
-        result = result.replaceAll(',', '').replaceAll(' ', '');
-        double? amount = double.tryParse(result);
-        if (amount == null || amount <= 0) return "Amount not found";
-        return amount.toStringAsFixed(2);
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final content =
+            (data['choices'][0]['message']['content'] as String).trim();
+        debugPrint('Groq Response: $content');
+        return _parser.parseGroqResponse(content, ocrText);
       } else {
-        debugPrint("Groq Error: ${response.body}");
-        return _ocrFallback(ocrText);
+        debugPrint('Groq Error: ${response.body}');
+        return _parser.ocrFallback(ocrText);
       }
     } catch (e) {
-      debugPrint("Groq Error: $e");
-      return _ocrFallback(ocrText);
+      debugPrint('Groq Error: $e');
+      return _parser.ocrFallback(ocrText);
     }
   }
 
-  String _ocrFallback(String text) {
-    RegExp amountRegExp = RegExp(r'\d{1,3}(?:,\s*\d{3})*(?:\.\s*\d{1,2})?');
-    List<String> lines = text.split('\n');
-    List<String> keywords = [
-      'net amount', 'net total', 'grand total', 'total', 'payable',
-      'card -', 'card-', 'cash -', 'cash-',
-      'මුළු', 'මුලු', 'එකතුව', 'ගෙවිය යුතු', 'සේවිය යුතු'
-    ];
+  /// Bypasses OCR and feeds [ocrText] directly to the Groq extraction path.
+  /// Only for use in unit tests.
+  @visibleForTesting
+  Future<BillScanResult?> extractItemsFromText(String ocrText) =>
+      _extractItemsWithGroq(ocrText);
 
-    for (int i = 0; i < lines.length; i++) {
-      String lower = lines[i].toLowerCase();
-      if (keywords.any((kw) => lower.contains(kw))) {
-        for (var m in amountRegExp.allMatches(lines[i])) {
-          double? val = double.tryParse(m.group(0)!.replaceAll(' ', '').replaceAll(',', ''));
-          if (val != null && val > 10) return val.toStringAsFixed(2);
-        }
-        for (int j = i + 1; j < lines.length && j <= i + 3; j++) {
-          for (var m in amountRegExp.allMatches(lines[j])) {
-            double? val = double.tryParse(m.group(0)!.replaceAll(' ', '').replaceAll(',', ''));
-            if (val != null && val > 10) return val.toStringAsFixed(2);
-          }
-        }
-      }
-    }
-
-    List<double> allAmounts = [];
-    for (String line in lines) {
-      for (var m in amountRegExp.allMatches(line)) {
-        double? val = double.tryParse(m.group(0)!.replaceAll(' ', '').replaceAll(',', ''));
-        if (val != null && val > 10) allAmounts.add(val);
-      }
-    }
-
-    List<double> roundNumbers = allAmounts.where((v) => v % 100 == 0 && v >= 100).toList();
-    if (roundNumbers.isNotEmpty && allAmounts.length >= 2) {
-      double cashGiven = roundNumbers.reduce((a, b) => a > b ? a : b);
-      int idx = allAmounts.lastIndexOf(cashGiven);
-      if (idx > 0) return allAmounts[idx - 1].toStringAsFixed(2);
-    }
-
-    double largest = allAmounts.isNotEmpty ? allAmounts.reduce((a, b) => a > b ? a : b) : 0;
-    return largest > 0 ? largest.toStringAsFixed(2) : "Amount not found";
-  }
-
+  // ─── Dispose ───────────────────────────────────────────────────
   void dispose() {
-    _textRecognizer.close();
+    // close() returns Future<void> via a MethodChannel; swallow async errors
+    // that arise in environments where the Flutter binding is not initialised
+    // (e.g. plain unit tests).
+    _textRecognizer.close().catchError((_) {});
+    _httpClient.close();
   }
 }
