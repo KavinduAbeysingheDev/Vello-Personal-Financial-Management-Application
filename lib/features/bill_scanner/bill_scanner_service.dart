@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
@@ -102,27 +101,29 @@ class BillScannerService {
 
   // ─── Process Multiple Images ──────────────────────────────────
   Future<String?> _processMultipleImages(List<String> imagePaths) async {
-    String mergedText = '';
+    final merged = StringBuffer();
 
     for (int i = 0; i < imagePaths.length; i++) {
       final inputImage = InputImage.fromFilePath(imagePaths[i]);
       final RecognizedText recognizedText =
           await _textRecognizer.processImage(inputImage);
 
-      String pageText = '';
+      final page = StringBuffer();
       for (TextBlock block in recognizedText.blocks) {
         for (TextLine line in block.lines) {
-          pageText += '${line.text}\n';
+          page.write('${line.text}\n');
         }
       }
 
+      final pageText = page.toString();
       debugPrint("---------- OCR PAGE ${i + 1} ----------");
       debugPrint(pageText);
       debugPrint("---------------------------------------");
 
-      mergedText += pageText;
+      merged.write(pageText);
     }
 
+    final mergedText = merged.toString();
     debugPrint("---------- MERGED OCR TEXT ----------");
     debugPrint(mergedText);
     debugPrint("-------------------------------------");
@@ -138,12 +139,13 @@ class BillScannerService {
     final RecognizedText recognizedText =
         await _textRecognizer.processImage(inputImage);
 
-    String rawText = '';
+    final buf = StringBuffer();
     for (TextBlock block in recognizedText.blocks) {
       for (TextLine line in block.lines) {
-        rawText += '${line.text}\n';
+        buf.write('${line.text}\n');
       }
     }
+    final rawText = buf.toString();
 
     debugPrint("---------- OCR RAW OUTPUT ($source) ----------");
     debugPrint(rawText);

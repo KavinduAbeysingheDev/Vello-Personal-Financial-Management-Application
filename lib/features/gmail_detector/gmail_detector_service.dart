@@ -5,6 +5,7 @@ import 'package:googleapis/gmail/v1.dart' as gmail;
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../services/finance_service.dart';
 
 class GmailDetectorService {
   static const List<String> _scopes = [
@@ -12,7 +13,7 @@ class GmailDetectorService {
   ];
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: _scopes);
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  FirebaseFirestore get _firestore => FirebaseFirestore.instance;
   GoogleSignInAccount? _currentUser;
 
   Future<bool> signIn() async {
@@ -33,27 +34,27 @@ class GmailDetectorService {
   bool get isSignedIn => _currentUser != null;
 
   Future<void> setEnabled(bool enabled) async {
-  final userId = FirebaseAuth.instance.currentUser?.uid ?? 'test_user';
-  await _firestore.collection('user_settings').doc(userId).set({
-    'gmail_detector_enabled': enabled,
-  }, SetOptions(merge: true));
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? 'test_user';
+    await _firestore.collection('user_settings').doc(userId).set({
+      'gmail_detector_enabled': enabled,
+    }, SetOptions(merge: true));
 
-  if (enabled) {
-    // Always force sign in dialog — don't use silent sign in
-    await _googleSignIn.signOut(); // clear cached account first
-    final signedIn = await signIn();
-    if (signedIn) {
-      await scanAndStore();
+    if (enabled) {
+      // Always force sign in dialog — don't use silent sign in
+      await _googleSignIn.signOut(); // clear cached account first
+      final signedIn = await signIn();
+      if (signedIn) {
+        await scanAndStore();
+      }
+    } else {
+      await signOut();
     }
-  } else {
-    await signOut();
   }
-}
 
   Future<bool> isEnabled() async {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? 'test_user';
     final doc = await _firestore.collection('user_settings').doc(userId).get();
-    return doc.data()?['gmail_detector_enabled'] ?? false;
+    return doc.data()?['gmail_detector_enabled'] as bool? ?? false;
   }
 
   Future<int> scanAndStore() async {
@@ -62,12 +63,11 @@ class GmailDetectorService {
 
     final userId = FirebaseAuth.instance.currentUser?.uid ?? 'test_user';
 
+    final client = _AuthenticatedClient(await _currentUser!.authHeaders);
     try {
-      final authHeaders = await _currentUser!.authHeaders;
-      final client = _AuthenticatedClient(authHeaders);
       final gmailApi = gmail.GmailApi(client);
 
-      final query = 'category:purchases newer_than:30d';
+      const query = 'category:purchases newer_than:30d';
 
       final messages = await gmailApi.users.messages.list(
         'me',
@@ -75,16 +75,14 @@ class GmailDetectorService {
         maxResults: 50,
       );
 
-      if (messages.messages == null) {
-        client.close();
-        return 0;
-      }
+      if (messages.messages == null) return 0;
 
       int savedCount = 0;
 
       for (final msg in messages.messages!.take(20)) {
+        if (msg.id == null) continue;
         final detail = await gmailApi.users.messages.get('me', msg.id!);
-        final extracted = _extractBillData(detail);
+        final extracted = extractBillData(detail);
 
         if (extracted != null) {
           final existing = await _firestore
@@ -95,33 +93,31 @@ class GmailDetectorService {
               .get();
 
           if (existing.docs.isEmpty) {
-            await _firestore.collection('transactions').add({
-              'userId': userId,
-              'title': extracted['subject'],
-              'amount': extracted['amount'],
-              'category': extracted['category'],
-              'type': 'expense',
-              'date': Timestamp.now(),
-              'createdAt': Timestamp.now(),
-              'source': 'gmail',
-              'sourceId': msg.id,
-            });
+            await FinanceService().addTransaction(
+              userId: userId,
+              title: extracted['subject'] as String,
+              amount: extracted['amount'] as double,
+              category: extracted['category'] as String,
+              type: 'expense',
+              date: DateTime.now(),
+            );
             savedCount++;
           }
         }
       }
 
-      client.close();
       return savedCount;
     } catch (e) {
       debugPrint('Gmail Scan Error: $e');
       return 0;
+    } finally {
+      client.close();
     }
   }
 
-  Map<String, dynamic>? _extractBillData(gmail.Message message) {
+  @visibleForTesting
+  Map<String, dynamic>? extractBillData(gmail.Message message) {
     String subject = '';
-    String body = '';
 
     final headers = message.payload?.headers ?? [];
     for (final header in headers) {
@@ -130,19 +126,20 @@ class GmailDetectorService {
       }
     }
 
-    body = _getBody(message.payload);
+    final body = getBody(message.payload);
 
-    final amount = _extractAmount(body.isNotEmpty ? body : subject);
+    final amount = extractAmount(body.isNotEmpty ? body : subject);
     if (amount == null) return null;
 
     return {
       'subject': subject.isNotEmpty ? subject : 'Bill from Gmail',
       'amount': amount,
-      'category': _detectCategory(subject),
+      'category': detectCategory(subject),
     };
   }
 
-  String _detectCategory(String subject) {
+  @visibleForTesting
+  String detectCategory(String subject) {
     final s = subject.toLowerCase();
     if (s.contains('uber eats') ||
         s.contains('food') ||
@@ -173,37 +170,40 @@ class GmailDetectorService {
     return 'Shopping';
   }
 
-  String _getBody(gmail.MessagePart? payload) {
+  @visibleForTesting
+  String getBody(gmail.MessagePart? payload) {
     if (payload == null) return '';
     if (payload.body?.data != null) {
-      return _decodeBase64(payload.body!.data!);
+      return decodeBase64(payload.body!.data!);
     }
     if (payload.parts != null) {
       for (final part in payload.parts!) {
         if (part.mimeType == 'text/plain' && part.body?.data != null) {
-          return _decodeBase64(part.body!.data!);
+          return decodeBase64(part.body!.data!);
         }
       }
       for (final part in payload.parts!) {
         if (part.mimeType == 'text/html' && part.body?.data != null) {
-          return _decodeBase64(part.body!.data!);
+          return decodeBase64(part.body!.data!);
         }
       }
     }
     return '';
   }
 
-  String _decodeBase64(String data) {
+  @visibleForTesting
+  String decodeBase64(String data) {
     try {
-      final normalized = data.replaceAll('-', '+').replaceAll('_', '/');
-      final bytes = base64Decode(normalized);
+      // base64Url.normalize adds missing '=' padding; decode handles URL-safe chars
+      final bytes = base64Url.decode(base64Url.normalize(data));
       return utf8.decode(bytes, allowMalformed: true);
     } catch (e) {
       return '';
     }
   }
 
-  double? _extractAmount(String text) {
+  @visibleForTesting
+  double? extractAmount(String text) {
     if (text.isEmpty) return null;
     final patterns = [
       RegExp(

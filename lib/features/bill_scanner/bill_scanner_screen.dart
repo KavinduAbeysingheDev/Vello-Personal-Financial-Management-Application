@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'bill_scanner_service.dart';
-import 'package:vello_app/main.dart';
 
 class _C {
   static const primary         = Color(0xFF00674F);
@@ -126,18 +125,9 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
           ],
         ),
         actions: [
-          Builder(
-            builder: (ctx) => IconButton(
-              icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 24),
-              onPressed: () => Scaffold.of(ctx).openDrawer(),
-            ),
-          ),
           IconButton(
-            icon: const Icon(Icons.settings_rounded, color: Colors.white, size: 22),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const SettingsPage()),
-            ),
+            icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 24),
+            onPressed: widget.onMenuTap,
           ),
           const SizedBox(width: 4),
         ],
