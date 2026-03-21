@@ -29,6 +29,7 @@ dependencies:
 
   #SMS
   flutter_sms_inbox: ^1.0.3
+  shared_preferences: ^2.3.0
 
 dev_dependencies:
   flutter_test:
