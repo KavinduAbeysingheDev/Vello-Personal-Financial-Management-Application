@@ -12,7 +12,7 @@ class GmailDetectorService {
   ];
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: _scopes);
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  FirebaseFirestore get _firestore => FirebaseFirestore.instance;
   GoogleSignInAccount? _currentUser;
 
   Future<bool> signIn() async {
@@ -48,6 +48,12 @@ class GmailDetectorService {
     } else {
       await signOut();
     }
+  }
+
+  Future<bool> isEnabled() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? 'test_user';
+    final doc = await _firestore.collection('user_settings').doc(userId).get();
+    return doc.data()?['gmail_detector_enabled'] as bool? ?? false;
   }
 
   Future<int> scanAndStore() async {
@@ -146,13 +152,6 @@ class GmailDetectorService {
         s.contains('transport')) {
       return 'Transportation';
     }
-    if (s.contains('order') ||
-        s.contains('receipt') ||
-        s.contains('purchase') ||
-        s.contains('google play') ||
-        s.contains('invoice')) {
-      return 'Shopping';
-    }
     if (s.contains('electric') ||
         s.contains('water') ||
         s.contains('internet') ||
@@ -160,6 +159,13 @@ class GmailDetectorService {
         s.contains('hutch') ||
         s.contains('slt')) {
       return 'Bills';
+    }
+    if (s.contains('order') ||
+        s.contains('receipt') ||
+        s.contains('purchase') ||
+        s.contains('google play') ||
+        s.contains('invoice')) {
+      return 'Shopping';
     }
     return 'Shopping';
   }
