@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/finance_service.dart';
 
@@ -107,7 +107,7 @@ class SmsDetectorService {
     final status = await Permission.sms.status;
     if (!status.isGranted) return 0;
 
-    final userId = FirebaseAuth.instance.currentUser?.uid ?? 'test_user';
+    final userId = Supabase.instance.client.auth.currentUser?.id ?? 'test_user';
     final prefs = await SharedPreferences.getInstance();
 
     try {

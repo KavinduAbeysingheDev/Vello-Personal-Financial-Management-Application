@@ -3,8 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/gmail/v1.dart' as gmail;
 import 'package:http/http.dart' as http;
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class GmailDetectorService {
   static const List<String> _scopes = [
@@ -12,7 +11,7 @@ class GmailDetectorService {
   ];
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: _scopes);
-  FirebaseFirestore get _firestore => FirebaseFirestore.instance;
+  SupabaseClient get _supabase => Supabase.instance.client;
   GoogleSignInAccount? _currentUser;
 
   Future<bool> signIn() async {
@@ -33,13 +32,13 @@ class GmailDetectorService {
   bool get isSignedIn => _currentUser != null;
 
   Future<void> setEnabled(bool enabled) async {
-    final userId = FirebaseAuth.instance.currentUser?.uid ?? 'test_user';
-    await _firestore.collection('user_settings').doc(userId).set({
+    final userId = _supabase.auth.currentUser?.id ?? 'test_user';
+    await _supabase.from('user_settings').upsert({
+      'user_id': userId,
       'gmail_detector_enabled': enabled,
-    }, SetOptions(merge: true));
+    }, onConflict: 'user_id');
 
     if (enabled) {
-      // Always force sign in dialog — don't use silent sign in
       await _googleSignIn.signOut(); // clear cached account first
       final signedIn = await signIn();
       if (signedIn) {
@@ -51,22 +50,25 @@ class GmailDetectorService {
   }
 
   Future<bool> isEnabled() async {
-    final userId = FirebaseAuth.instance.currentUser?.uid ?? 'test_user';
-    final doc = await _firestore.collection('user_settings').doc(userId).get();
-    return doc.data()?['gmail_detector_enabled'] as bool? ?? false;
+    final userId = _supabase.auth.currentUser?.id ?? 'test_user';
+    final data = await _supabase
+        .from('user_settings')
+        .select('gmail_detector_enabled')
+        .eq('user_id', userId)
+        .maybeSingle();
+    return data?['gmail_detector_enabled'] as bool? ?? false;
   }
 
   Future<int> scanAndStore() async {
     _currentUser ??= await _googleSignIn.signInSilently();
     if (_currentUser == null) return 0;
 
-    final userId = FirebaseAuth.instance.currentUser?.uid ?? 'test_user';
-
+    final userId = _supabase.auth.currentUser?.id ?? 'test_user';
     final client = _AuthenticatedClient(await _currentUser!.authHeaders);
+
     try {
       final gmailApi = gmail.GmailApi(client);
-
-      final query = 'category:purchases newer_than:30d';
+      const query = 'category:purchases newer_than:30d';
 
       final messages = await gmailApi.users.messages.list(
         'me',
@@ -84,24 +86,25 @@ class GmailDetectorService {
         final extracted = _extractBillData(detail);
 
         if (extracted != null) {
-          final existing = await _firestore
-              .collection('transactions')
-              .where('userId', isEqualTo: userId)
-              .where('source', isEqualTo: 'gmail')
-              .where('sourceId', isEqualTo: msg.id)
-              .get();
+          // Check for duplicate
+          final existing = await _supabase
+              .from('transactions')
+              .select('id')
+              .eq('user_id', userId)
+              .eq('source', 'gmail')
+              .eq('source_id', msg.id!)
+              .maybeSingle();
 
-          if (existing.docs.isEmpty) {
-            await _firestore.collection('transactions').add({
-              'userId': userId,
+          if (existing == null) {
+            await _supabase.from('transactions').insert({
+              'user_id': userId,
               'title': extracted['subject'],
               'amount': extracted['amount'],
               'category': extracted['category'],
               'type': 'expense',
-              'date': Timestamp.now(),
-              'createdAt': Timestamp.now(),
+              'date': DateTime.now().toIso8601String(),
               'source': 'gmail',
-              'sourceId': msg.id,
+              'source_id': msg.id,
             });
             savedCount++;
           }
@@ -128,7 +131,6 @@ class GmailDetectorService {
     }
 
     final body = _getBody(message.payload);
-
     final amount = _extractAmount(body.isNotEmpty ? body : subject);
     if (amount == null) return null;
 
@@ -144,37 +146,21 @@ class GmailDetectorService {
     if (s.contains('uber eats') ||
         s.contains('food') ||
         s.contains('restaurant') ||
-        s.contains('eats')) {
-      return 'Food';
-    }
-    if (s.contains('uber') ||
-        s.contains('pickme') ||
-        s.contains('transport')) {
+        s.contains('eats')) return 'Food';
+    if (s.contains('uber') || s.contains('pickme') || s.contains('transport'))
       return 'Transportation';
-    }
     if (s.contains('electric') ||
         s.contains('water') ||
         s.contains('internet') ||
         s.contains('dialog') ||
         s.contains('hutch') ||
-        s.contains('slt')) {
-      return 'Bills';
-    }
-    if (s.contains('order') ||
-        s.contains('receipt') ||
-        s.contains('purchase') ||
-        s.contains('google play') ||
-        s.contains('invoice')) {
-      return 'Shopping';
-    }
+        s.contains('slt')) return 'Bills';
     return 'Shopping';
   }
 
   String _getBody(gmail.MessagePart? payload) {
     if (payload == null) return '';
-    if (payload.body?.data != null) {
-      return _decodeBase64(payload.body!.data!);
-    }
+    if (payload.body?.data != null) return _decodeBase64(payload.body!.data!);
     if (payload.parts != null) {
       for (final part in payload.parts!) {
         if (part.mimeType == 'text/plain' && part.body?.data != null) {
