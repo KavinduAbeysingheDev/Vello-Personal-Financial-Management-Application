@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'services/app_provider.dart';
+import 'config/supabase_config.dart';
 
 // ── Screen imports ──────────────────────────────────────────────────────────
 import 'Saving_goals/saving_goals_frontend.dart';
@@ -30,8 +31,8 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await Supabase.initialize(
-    url: 'https://akhhxegpljrzmkziirng.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFraGh4ZWdwbGpyem1remlpcm5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNzE0NzksImV4cCI6MjA4OTc0NzQ3OX0.M5-oSPlXcfeHdY66q622RtrMDMl6sI9phGRlrQzaKnk',
+    url: SupabaseConfig.supabaseUrl,
+    anonKey: SupabaseConfig.supabaseAnonKey,
   );
   
   // We wrap AppProvider here but then initialize it in AppLoader
@@ -56,8 +57,9 @@ class VelloApp extends StatelessWidget {
           useMaterial3: true,
           scaffoldBackgroundColor: const Color(0xFFF3F4F6),
         ),
-        home: const _AppLoader(),
+        home: const SplashScreen(),
         routes: {
+          '/load': (context) => const _AppLoader(),
           '/savings': (context) => const SavingsGoalsScreen(),
           '/ai': (context) => const AIFinanceScreen(),
           '/statistics': (context) => const StatisticScreen(),
@@ -112,19 +114,22 @@ class AuthGate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Check if user is already logged in
-    final session = Supabase.instance.client.auth.currentSession;
-    if (session != null) {
-      return const MainScreen();
-    }
-    return const LoginScreen();
+    return StreamBuilder<AuthState>(
+      stream: Supabase.instance.client.auth.onAuthStateChange,
+      builder: (context, snapshot) {
+        final session = Supabase.instance.client.auth.currentSession;
+        if (session != null) {
+          return const MainScreen();
+        }
+        return const LoginScreen();
+      },
+    );
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN NAVIGATION WRAPPER (Global Header & Footer)
 // ─────────────────────────────────────────────────────────────────────────────
->>>>>>> 7788682 (fix(nav): wire up main navigation and fix missing scaffolding on pushed screens)
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -135,41 +140,19 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
-<<<<<<< HEAD
+  // 0: Home, 1: Scan, 2: Add, 3: Statistics, 4: AI
   final List<Widget> _screens = [
-    const SavingsGoalsScreen(),
-    const Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.qr_code_scanner, size: 64, color: Colors.grey),
-          SizedBox(height: 16),
-          Text('Scan / QR\n(Placeholder)', textAlign: TextAlign.center),
-        ],
-      ),
-    ),
-    const Center(child: Text('Add Transaction Placeholder')),
+    const HomeScreen(),
+    const BillScannerScreen(),
+    const Center(child: Text('Add')),
     const StatisticScreen(),
     const AIFinanceScreen(),
-=======
-  // 0: Home (Savings Goals), 1: Scan (Bill Scanner), 2: Add (center btn),
-  // 3: Events (Statistics), 4: AI
-  final List<Widget> _screens = [
-    const HomeScreen(),               // Index 0: Home
-    const BillScannerScreen(),        // Index 1: Scan
-    const Center(child: Text('Add')), // Index 2: placeholder (center btn navigates)
-    const StatisticScreen(),          // Index 3: Events / Statistics
-    const AIFinanceScreen(),          // Index 4: AI
->>>>>>> 7788682 (fix(nav): wire up main navigation and fix missing scaffolding on pushed screens)
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-<<<<<<< HEAD
-=======
       // ── Global Header ─────────────────────────────────────────────────
->>>>>>> 7788682 (fix(nav): wire up main navigation and fix missing scaffolding on pushed screens)
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -315,18 +298,13 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
       ),
-<<<<<<< HEAD
+      // ── Body ─────────────────────────────────────────────────────────
       body: IndexedStack(
         index: _currentIndex,
         children: _screens,
       ),
-=======
-
-      // ── Body ─────────────────────────────────────────────────────────
-      body: IndexedStack(index: _currentIndex, children: _screens),
 
       // ── Bottom Navigation Bar ────────────────────────────────────────
->>>>>>> 7788682 (fix(nav): wire up main navigation and fix missing scaffolding on pushed screens)
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
