@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../screens/profile_page.dart';
 
 class VelloTopBar extends StatelessWidget implements PreferredSizeWidget {
   const VelloTopBar({super.key});
@@ -49,8 +50,9 @@ class VelloTopBar extends StatelessWidget implements PreferredSizeWidget {
         IconButton(
           icon: const Icon(Icons.person_outline, color: Colors.white),
           onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Profile Panel coming soon!')),
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfileScreen()),
             );
           },
         ),
@@ -62,24 +64,3 @@ class VelloTopBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => const Size.fromHeight(70);
 }
-=======
-import 'package:flutter/material.dart';
-
-class VelloTopBar extends StatelessWidget implements PreferredSizeWidget {
-  const VelloTopBar({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return AppBar(
-      title: const Text('Vello', style: TextStyle(fontWeight: FontWeight.bold)),
-      centerTitle: true,
-      elevation: 0,
-      backgroundColor: Colors.transparent,
-      foregroundColor: Colors.black87,
-    );
-  }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-}
->>>>>>> b4cf5d3 (feat(ui): add new home screen layout, top bar, and drawer widgets)
