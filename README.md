@@ -1,5 +1,6 @@
 # Vello-Personal-Financial-Management-Application
 # Vello – Personal Financial Management Application
+# vello_app
 
 Vello is a personal financial management application developed as part of the **SDGP (Software Development Group Project)**.  
 The application helps users track income and expenses, manage budgets, and gain clear insights into their financial habits through an intuitive and user-friendly interface.
@@ -94,7 +95,6 @@ Vello/
     └── app.log
 
 #License
-
 MIT License
 
 Copyright (c) 2026 Vello Team
