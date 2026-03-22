@@ -1,95 +1,62 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_model.dart';
 
 class AuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  // Use a getter so Supabase.instance is only accessed after initialize() completes
+  SupabaseClient get _supabase => Supabase.instance.client;
 
   // Get current user
-  User? get currentUser => _auth.currentUser;
+  User? get currentUser => _supabase.auth.currentUser;
 
   // Stream of auth changes
-  Stream<User?> get authStateChanges => _auth.authStateChanges();
+  Stream<AuthState> get authStateChanges => _supabase.auth.onAuthStateChange;
 
   // Sign in with email and password
-  Future<UserCredential> signInWithEmail(String email, String password) async {
+  Future<AuthResponse> signInWithEmail(String email, String password) async {
     try {
-      UserCredential result = await _auth.signInWithEmailAndPassword(
+      final response = await _supabase.auth.signInWithPassword(
         email: email,
         password: password,
       );
-      return result;
+      return response;
     } catch (e) {
       rethrow;
     }
   }
 
   // Register with email and password
-  Future<UserCredential> registerWithEmail(
-      String email,
-      String password,
-      String name,
-      ) async {
+  Future<AuthResponse> registerWithEmail(
+    String email,
+    String password,
+    String name,
+  ) async {
     try {
-      UserCredential result = await _auth.createUserWithEmailAndPassword(
+      final response = await _supabase.auth.signUp(
         email: email,
         password: password,
+        data: {'name': name},
       );
 
-      // Create user document in Firestore
-      UserModel newUser = UserModel(
-        uid: result.user!.uid,
-        name: name,
-        email: email,
-        createdAt: DateTime.now(),
-      );
+      // Create user profile in 'users' table
+      if (response.user != null) {
+        await _supabase.from('users').upsert({
+          'id': response.user!.id,
+          'name': name,
+          'email': email,
+          'created_at': DateTime.now().toIso8601String(),
+        });
+      }
 
-      await _firestore
-          .collection('users')
-          .doc(result.user!.uid)
-          .set(newUser.toMap());
-
-      // Initialize default budgets
-      await _initializeDefaultBudgets(result.user!.uid);
-
-      return result;
+      return response;
     } catch (e) {
       rethrow;
     }
   }
 
-  // Initialize default budgets for new user
-  Future<void> _initializeDefaultBudgets(String userId) async {
-    final defaultBudgets = [
-      {'category': 'Food', 'limit': 500.0},
-      {'category': 'Transportation', 'limit': 200.0},
-      {'category': 'Entertainment', 'limit': 100.0},
-      {'category': 'Shopping', 'limit': 300.0},
-    ];
-
-    final batch = _firestore.batch();
-    final now = DateTime.now();
-    final currentMonth = DateTime(now.year, now.month, 1);
-
-    for (var budget in defaultBudgets) {
-      final docRef = _firestore.collection('budgets').doc();
-      batch.set(docRef, {
-        'userId': userId,
-        'category': budget['category'],
-        'limit': budget['limit'],
-        'spent': 0.0,
-        'month': Timestamp.fromDate(currentMonth),
-      });
-    }
-
-    await batch.commit();
-  }
-
   // Sign out
   Future<void> signOut() async {
     try {
-      await _auth.signOut();
+      await _supabase.auth.signOut();
     } catch (e) {
       rethrow;
     }
@@ -98,7 +65,7 @@ class AuthService {
   // Reset password
   Future<void> resetPassword(String email) async {
     try {
-      await _auth.sendPasswordResetEmail(email: email);
+      await _supabase.auth.resetPasswordForEmail(email);
     } catch (e) {
       rethrow;
     }
@@ -107,14 +74,28 @@ class AuthService {
   // Get user data
   Future<UserModel?> getUserData(String uid) async {
     try {
-      DocumentSnapshot doc =
-      await _firestore.collection('users').doc(uid).get();
-      if (doc.exists) {
-        return UserModel.fromFirestore(doc);
+      final data = await _supabase
+          .from('users')
+          .select()
+          .eq('id', uid)
+          .maybeSingle();
+
+      if (data != null) {
+        return UserModel.fromMap(data);
       }
       return null;
     } catch (e) {
-      rethrow;
+      // If table doesn't exist yet, return a basic model from auth
+      final user = currentUser;
+      if (user != null) {
+        return UserModel(
+          uid: user.id,
+          name: user.userMetadata?['name'] ?? 'User',
+          email: user.email ?? '',
+          createdAt: DateTime.tryParse(user.createdAt) ?? DateTime.now(),
+        );
+      }
+      return null;
     }
   }
 
@@ -129,7 +110,7 @@ class AuthService {
       if (name != null) updates['name'] = name;
       if (email != null) updates['email'] = email;
 
-      await _firestore.collection('users').doc(uid).update(updates);
+      await _supabase.from('users').update(updates).eq('id', uid);
     } catch (e) {
       rethrow;
     }
