@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 class VelloTopBar extends StatelessWidget implements PreferredSizeWidget {
   const VelloTopBar({super.key});
@@ -62,3 +63,24 @@ class VelloTopBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => const Size.fromHeight(70);
 }
+=======
+import 'package:flutter/material.dart';
+
+class VelloTopBar extends StatelessWidget implements PreferredSizeWidget {
+  const VelloTopBar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      title: const Text('Vello', style: TextStyle(fontWeight: FontWeight.bold)),
+      centerTitle: true,
+      elevation: 0,
+      backgroundColor: Colors.transparent,
+      foregroundColor: Colors.black87,
+    );
+  }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+}
+>>>>>>> b4cf5d3 (feat(ui): add new home screen layout, top bar, and drawer widgets)

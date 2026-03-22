@@ -96,4 +96,8 @@ class VelloDrawer extends StatelessWidget {
       },
     );
   }
+        ),
+      ),
+    );
+  }
 }
