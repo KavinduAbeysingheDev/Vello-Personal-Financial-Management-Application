@@ -404,6 +404,80 @@ class _BudgetScreenState extends State<BudgetScreen> {
           onPressed: () => _confirmDelete(context, budget),
         ),
         ]),
-    const SizedBox(height: 14),
+        const SizedBox(height: 14),
+
+          // ── Spent / limit row ───────────────────────────────────────────────
+          Row(children: [
+            Text('Spent',
+                style: TextStyle(fontSize: 12, color: _textSecondary)),
+            const Spacer(),
+            Text('\$${budget.spent.toStringAsFixed(2)}',
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: _textPrimary)),
+          ]),
+          const SizedBox(height: 8),
+
+          // Progress bar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 10,
+              backgroundColor: _borderClr,
+              valueColor: AlwaysStoppedAnimation(barColor),
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // ── Limit row ───────────────────────────────────────────────────────
+          Row(children: [
+            Text('Limit',
+                style: TextStyle(fontSize: 12, color: _textSecondary)),
+            const Spacer(),
+            Text('\$${budget.limit.toStringAsFixed(2)}',
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: _textPrimary)),
+          ]),
+
+          // ── Usage percentage ────────────────────────────────────────────────
+          const SizedBox(height: 8),
+          Row(children: [
+            // Usage badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                  color: barColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(8)),
+              child: Text('${(progress * 100).toStringAsFixed(0)}% used',
+                  style: TextStyle(
+                      color: barColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600)),
+            ),
+            const Spacer(),
+            // Quick edit limit button
+            GestureDetector(
+              onTap: () => _showAddOrEditDialog(context, existing: budget),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                decoration: BoxDecoration(
+                    color: _kTeal.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8)),
+                child: Text('Change limit',
+                    style: TextStyle(
+                        color: _kTeal,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ]),
+        ]),
+    );
+  }
+
 
 
