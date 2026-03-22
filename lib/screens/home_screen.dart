@@ -264,34 +264,43 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   Widget _budgetOverviewCard(AppProvider provider) {
-    final spend = provider.categorySpendThisMonth;
-    final categories = [
-      _BudgetCategory('Food', const Color(0xFF35C7A1), 500),
-      _BudgetCategory('Transport', const Color(0xFF4A84E8), 200),
-      _BudgetCategory('Entertainment', const Color(0xFF8A63F0), 100),
-      _BudgetCategory('Bills', const Color(0xFFFF9800), 400),
-      _BudgetCategory('Shopping', const Color(0xFFFF1744), 300),
-      _BudgetCategory('Events', const Color(0xFF006D5B), 250),
+    final budgets = provider.budgets;
+
+    if (budgets.isEmpty) {
+      return _sectionCard(
+        title: 'Budget Overview 📊',
+        child: const Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Text('No budgets set. Set limits in the side menu!', 
+              style: TextStyle(color: Colors.grey, fontSize: 13)),
+          ),
+        ),
+      );
+    }
+
+    final colors = [
+      const Color(0xFF35C7A1),
+      const Color(0xFF4A84E8),
+      const Color(0xFF8A63F0),
+      const Color(0xFFFF9800),
+      const Color(0xFFFF1744),
     ];
 
-    final activeCategories = categories
-        .where((c) => (spend[c.name] ?? 0) > 0 || c.name == 'Food' || c.name == 'Transport')
-        .toList();
-
     return _sectionCard(
-      title: 'Budget Overview 📊',
+      title: 'Monthly Budget Status 📊',
       child: Column(
-        children: activeCategories.asMap().entries.map((entry) {
-          final c = entry.value;
-          final spent = spend[c.name] ?? 0.0;
-          final progress = (spent / c.budget).clamp(0.0, 1.0);
+        children: budgets.asMap().entries.map((entry) {
+          final b = entry.value;
+          final idx = entry.key;
+          final progress = b.usagePercent.clamp(0.0, 1.0);
           return Padding(
             padding: const EdgeInsets.only(bottom: 14),
             child: BudgetBar(
-              label: c.name,
-              valueText: '\$${spent.toStringAsFixed(2)} / \$${c.budget.toStringAsFixed(0)}',
+              label: b.category,
+              valueText: '\$${b.currentSpent.toStringAsFixed(0)} / \$${b.amountLimit.toStringAsFixed(0)}',
               progress: progress,
-              color: progress >= 1.0 ? Colors.red : c.color,
+              color: b.isOverspent ? Colors.red : colors[idx % colors.length],
             ),
           );
         }).toList(),
