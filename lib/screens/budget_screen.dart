@@ -49,3 +49,142 @@ class _BudgetScreenState extends State<BudgetScreen> {
   Color get _textPrimary   => _dark ? Colors.white : const Color(0xFF111111);
   Color get _textSecondary => _dark ? const Color(0xFF9CA3AF) : Colors.grey.shade600;
   Color get _inputFill  => _dark ? const Color(0xFF111827) : const Color(0xFFF9FAFB);
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: appTheme,
+      builder: (context, _, __) {
+        return Scaffold(
+          backgroundColor: _scaffoldBg,
+
+          // ── AppBar ────────────────────────────────────────────────────────
+          appBar: AppBar(
+            backgroundColor: _kTeal,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Row(children: [
+              Container(
+                width: 32, height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset('assets/images/vello_logo.png',
+                      fit: BoxFit.contain),
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Text('Vello',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w300,
+                      letterSpacing: 3,
+                      fontSize: 22)),
+            ]),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.add_circle_outline_rounded,
+                    color: Colors.white),
+                tooltip: 'Add Budget',
+                onPressed: () => _showAddOrEditDialog(context),
+              ),
+              const SizedBox(width: 4),
+            ],
+          ),
+
+          // ── Body ──────────────────────────────────────────────────────────
+          body: StreamBuilder<List<Budget>>(
+            stream: _financeService.getBudgets(_userId),
+            builder: (context, snap) {
+              // Loading
+              if (snap.connectionState == ConnectionState.waiting) {
+                return const Center(
+                    child: CircularProgressIndicator(color: _kTeal));
+              }
+
+              // Error
+              if (snap.hasError) {
+                return Center(
+                  child: Text('Error: ${snap.error}',
+                      style: const TextStyle(color: Colors.red)),
+                );
+              }
+
+              final budgets = snap.data ?? [];
+
+              return SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(14, 18, 14, 40),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ── Header ──────────────────────────────────────────
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Budget Overview',
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w700,
+                                    color: _textPrimary)),
+                            const SizedBox(height: 2),
+                            Text('Manage your monthly spending limits',
+                                style: TextStyle(
+                                    fontSize: 12, color: _textSecondary)),
+                          ],
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: () => _showAddOrEditDialog(context),
+                          icon: const Icon(Icons.add, size: 16),
+                          label: const Text('Add Budget',
+                              style: TextStyle(
+                                  fontSize: 12, fontWeight: FontWeight.w600)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _kTeal,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 10),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+
+                    // ── Summary card ─────────────────────────────────────
+                    if (budgets.isNotEmpty) ...[
+                      _summaryCard(budgets),
+                      const SizedBox(height: 18),
+                    ],
+
+                    // ── Budget list ──────────────────────────────────────
+                    budgets.isEmpty
+                        ? _emptyState()
+                        : Column(
+                      children: budgets
+                          .map((b) => Padding(
+                        padding:
+                        const EdgeInsets.only(bottom: 14),
+                        child: _budgetCard(context, b),
+                      ))
+                          .toList(),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
