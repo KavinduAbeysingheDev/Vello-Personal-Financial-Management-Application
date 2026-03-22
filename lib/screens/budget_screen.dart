@@ -479,5 +479,287 @@ class _BudgetScreenState extends State<BudgetScreen> {
     );
   }
 
+  // ── Add / Edit dialog ───────────────────────────────────────────────────────
+  void _showAddOrEditDialog(BuildContext context, {Budget? existing}) {
+    final isEdit = existing != null;
+
+    // For new budgets, track which category is selected
+    String selectedCategory = existing?.category ?? _categories.first.name;
+    final limitCtrl = TextEditingController(
+        text: existing != null
+            ? existing.limit.toStringAsFixed(2)
+            : '');
+
+    showDialog(
+      context: context,
+      builder: (_) => StatefulBuilder(
+        builder: (ctx, setDlg) {
+          final dlgBg     = _dark ? const Color(0xFF1F2937) : const Color(0xFFF9FAFB);
+          final dlgCard   = _dark ? const Color(0xFF374151) : Colors.white;
+          final dlgBorder = _dark ? const Color(0xFF4B5563) : const Color(0xFFE5E7EB);
+          final dlgText   = _dark ? Colors.white : const Color(0xFF111827);
+          final dlgSub    = _dark ? const Color(0xFF9CA3AF) : Colors.black54;
+          final cfg       = _configFor(selectedCategory);
+
+          return Dialog(
+            backgroundColor: dlgBg,
+            insetPadding: const EdgeInsets.symmetric(
+                horizontal: 28, vertical: 24),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24)),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ── Dialog title ──────────────────────────────────────
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(isEdit ? 'Edit Budget' : 'Add Budget',
+                            style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: dlgText)),
+                        IconButton(
+                          icon: Icon(Icons.close, size: 20, color: dlgSub),
+                          onPressed: () => Navigator.pop(ctx),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    // ── Category picker (only for new budgets) ────────────
+                    if (!isEdit) ...[
+                      Text('Category',
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: dlgSub)),
+                      const SizedBox(height: 10),
+                      GridView.count(
+                        crossAxisCount: 4,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisSpacing: 8,
+                        mainAxisSpacing: 8,
+                        children: _categories.map((cat) {
+                          final isSel = selectedCategory == cat.name;
+                          return GestureDetector(
+                            onTap: () =>
+                                setDlg(() => selectedCategory = cat.name),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              decoration: BoxDecoration(
+                                color: isSel
+                                    ? cat.color.withOpacity(0.15)
+                                    : dlgCard,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                    color: isSel ? cat.color : dlgBorder,
+                                    width: isSel ? 2 : 1),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(cat.icon,
+                                      color: isSel ? cat.color : dlgSub,
+                                      size: 22),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    cat.name.length > 6
+                                        ? '${cat.name.substring(0, 5)}..'
+                                        : cat.name,
+                                    style: TextStyle(
+                                        fontSize: 9,
+                                        color: isSel ? cat.color : dlgSub,
+                                        fontWeight: isSel
+                                            ? FontWeight.w700
+                                            : FontWeight.w400),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 18),
+                    ],
+
+                    // ── Selected category preview (for edit) ──────────────
+                    if (isEdit) ...[
+                      Text('Category',
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: dlgSub)),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: cfg.color.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                              color: cfg.color.withOpacity(0.3)),
+                        ),
+                        child: Row(children: [
+                          Icon(cfg.icon, color: cfg.color, size: 20),
+                          const SizedBox(width: 10),
+                          Text(selectedCategory,
+                              style: TextStyle(
+                                  color: cfg.color,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14)),
+                        ]),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // ── Monthly limit field ───────────────────────────────
+                    Text('Monthly Limit',
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: dlgSub)),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: limitCtrl,
+                      keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true),
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: dlgText),
+                      decoration: InputDecoration(
+                        hintText: '0.00',
+                        prefixText: '\$ ',
+                        prefixStyle: TextStyle(
+                            color: dlgText,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18),
+                        hintStyle: TextStyle(color: dlgSub),
+                        filled: true,
+                        fillColor: _inputFill,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 14),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: dlgBorder)),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: dlgBorder)),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                                color: _kTeal, width: 1.5)),
+                      ),
+                    ),
+
+                    // ── Current spent info (edit only) ────────────────────
+                    if (isEdit) ...[
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: _kTeal.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(children: [
+                          Icon(Icons.info_outline_rounded,
+                              color: _kTeal, size: 16),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Current spending: \$${existing!.spent.toStringAsFixed(2)}',
+                            style: TextStyle(
+                                color: _kTeal,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500),
+                          ),
+                        ]),
+                      ),
+                    ],
+
+                    const SizedBox(height: 24),
+
+                    // ── Save button ───────────────────────────────────────
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final limit =
+                          double.tryParse(limitCtrl.text.trim());
+                          if (limit == null || limit <= 0) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Text(
+                                    'Please enter a valid amount'),
+                                backgroundColor: Colors.red,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                    BorderRadius.circular(10)),
+                              ),
+                            );
+                            return;
+                          }
+
+                          await _financeService.setBudget(
+                            userId:   _userId,
+                            category: selectedCategory,
+                            limit:    limit,
+                          );
+
+                          if (ctx.mounted) Navigator.pop(ctx);
+
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(isEdit
+                                    ? '$selectedCategory limit updated to \$${limit.toStringAsFixed(2)}'
+                                    : '$selectedCategory budget added'),
+                                backgroundColor: _kTeal,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                    BorderRadius.circular(10)),
+                              ),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _kTeal,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding:
+                          const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text(
+                          isEdit ? 'Update Limit' : 'Add Budget',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w700, fontSize: 15),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+
+
 
 
