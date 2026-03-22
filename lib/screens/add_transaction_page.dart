@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/finance_service.dart';
 
 class AddTransactionScreen extends StatefulWidget {
@@ -71,7 +71,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       setState(() => _isLoading = true);
 
       try {
-        final userId = FirebaseAuth.instance.currentUser!.uid;
+        final userId = Supabase.instance.client.auth.currentUser!.id;
 
         await _financeService.addTransaction(
           userId: userId,

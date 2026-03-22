@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
 
 class VelloTopBar extends StatelessWidget implements PreferredSizeWidget {
   const VelloTopBar({super.key});

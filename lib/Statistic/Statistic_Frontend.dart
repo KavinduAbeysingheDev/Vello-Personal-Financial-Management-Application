@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'Statistic_backend.dart';
+import '../widgets/vello_top_bar.dart';
 
 class StatisticScreen extends StatefulWidget {
   const StatisticScreen({super.key});
@@ -45,8 +46,11 @@ class _StatisticScreenState extends State<StatisticScreen>
     final slices = _service.getSlices(_selectedPeriod);
     final bars = _service.getBars(_selectedPeriod);
 
-    return SingleChildScrollView(
-      child: Column(
+    return Scaffold(
+      appBar: const VelloTopBar(),
+      backgroundColor: const Color(0xFFF9FAFB),
+      body: SingleChildScrollView(
+        child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 25),
@@ -70,7 +74,7 @@ class _StatisticScreenState extends State<StatisticScreen>
           ),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildPeriodToggle() {

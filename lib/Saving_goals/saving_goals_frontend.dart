@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'saving_goals_backend.dart';
+import '../widgets/vello_top_bar.dart';
 
 class SavingsGoalsScreen extends StatefulWidget {
   const SavingsGoalsScreen({super.key});
@@ -28,8 +29,11 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
         final service = SavingsGoalService();
         final goals = service.goals;
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 120),
+        return Scaffold(
+          appBar: const VelloTopBar(),
+          backgroundColor: const Color(0xFFF9FAFB),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 120),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -166,7 +170,7 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
               const SizedBox(height: 32),
             ],
           ),
-        );
+        ));
       },
     );
   }

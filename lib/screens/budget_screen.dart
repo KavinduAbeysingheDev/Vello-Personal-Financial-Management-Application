@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
 import '../app_theme.dart';
 import '../services/finance_service.dart';
@@ -40,7 +40,8 @@ class BudgetScreen extends StatefulWidget {
 
 class _BudgetScreenState extends State<BudgetScreen> {
   final _financeService = FinanceService();
-  final _userId = FirebaseAuth.instance.currentUser!.uid;
+  // Lazy getter — only evaluated after Supabase is initialized
+  String get _userId => Supabase.instance.client.auth.currentUser?.id ?? '';
 
   bool  get _dark => appTheme.isDark;
   Color get _scaffoldBg => _dark ? const Color(0xFF111827) : const Color(0xFFF5F7FA);
