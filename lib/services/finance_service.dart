@@ -1,17 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../models/transaction_model.dart';
 import '../models/budget_model.dart';
 
 class FinanceService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  // Add a transaction
-import 'package:flutter/foundation.dart';
-import '../models/transaction_model.dart';
-
-class FinanceService {
   FirebaseFirestore get _firestore => FirebaseFirestore.instance;
 
+  // Add a transaction
   Future<void> addTransaction({
     required String userId,
     required String title,
@@ -44,28 +39,6 @@ class FinanceService {
   }
 
   // Update budget spent amount
-  Future<void> _updateBudgetSpent(
-      String userId, String category, double amount) async {
-    try {
-      final now = DateTime.now();
-      final currentMonth = DateTime(now.year, now.month, 1);
-
-    final transaction = TransactionModel(
-      id: '',
-      userId: userId,
-      title: title,
-      amount: amount,
-      category: category,
-      type: type,
-      date: date,
-      createdAt: DateTime.now(),
-    );
-    await _firestore.collection('transactions').add(transaction.toMap());
-    if (type == 'expense') {
-      await _updateBudgetSpent(userId, category, amount);
-    }
-  }
-
   Future<void> _updateBudgetSpent(String userId, String category, double amount) async {
     try {
       final now = DateTime.now();
@@ -85,7 +58,7 @@ class FinanceService {
         });
       }
     } catch (e) {
-      print('Error updating budget: $e');
+      debugPrint('Error updating budget: $e');
     }
   }
 
@@ -102,7 +75,6 @@ class FinanceService {
   }
 
   // Get transactions by date range
-
   Stream<List<TransactionModel>> getTransactionsByDateRange(
       String userId,
       DateTime startDate,
@@ -121,7 +93,6 @@ class FinanceService {
       docs.sort((a, b) => b.date.compareTo(a.date));
       return docs;
     });
-
   }
 
   // Get transactions for the last N weeks (for budget planner)
@@ -263,13 +234,15 @@ class FinanceService {
       return categorySpending;
     } catch (e) {
       rethrow;
-      if (budgetQuery.docs.isNotEmpty) {
-        final budgetDoc = budgetQuery.docs.first;
-        final currentSpent = (budgetDoc.data()['spent'] as num?)?.toDouble() ?? 0.0;
-        await budgetDoc.reference.update({'spent': currentSpent + amount});
-      }
+    }
+  }
+
+  // Delete a budget
+  Future<void> deleteBudget(String budgetId) async {
+    try {
+      await _firestore.collection('budgets').doc(budgetId).delete();
     } catch (e) {
-      debugPrint('Error updating budget: $e');
+      rethrow;
     }
   }
 }

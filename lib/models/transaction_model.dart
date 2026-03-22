@@ -45,4 +45,10 @@ class TransactionModel {
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
+
+  factory TransactionModel.fromFirestore(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    return TransactionModel.fromMap(doc.id, data);
+  }
 }
+
