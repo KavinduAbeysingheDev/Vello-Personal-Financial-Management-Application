@@ -319,3 +319,91 @@ class _BudgetScreenState extends State<BudgetScreen> {
     );
   }
 
+  // ── Individual budget card ──────────────────────────────────────────────────
+  Widget _budgetCard(BuildContext context, Budget budget) {
+    final cfg         = _configFor(budget.category);
+    final rawProgress = budget.limit > 0 ? budget.spent / budget.limit : 0.0;
+    final progress    = rawProgress.clamp(0.0, 1.0);
+    final overBudget  = rawProgress >= 1.0;
+    // Three-state: red = over, orange = nearing (>=80%), category = healthy
+    final Color barColor;
+    if (rawProgress >= 1.0) {
+      barColor = const Color(0xFFE53935);
+    } else if (rawProgress >= 0.8) {
+      barColor = const Color(0xFFF57C00);
+    } else {
+      barColor = cfg.color;
+    }
+    final remaining = budget.limit - budget.spent;
+
+    return Container(
+        decoration: BoxDecoration(
+          color: _cardBg,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+              color: overBudget ? Colors.red.withOpacity(0.4) : _borderClr),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 3)),
+          ],
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(children: [
+        // ── Top row ────────────────────────────────────────────────────────
+        Row(children: [
+        Container(
+        width: 42, height: 42,
+          decoration: BoxDecoration(
+            color: cfg.color.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(cfg.icon, color: cfg.color, size: 22),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(budget.category,
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: _textPrimary)),
+              const SizedBox(height: 2),
+              Text(
+                rawProgress >= 1.0
+                    ? '⚠️ Over by \$${(budget.spent - budget.limit).toStringAsFixed(2)}'
+                    : rawProgress >= 0.8
+                    ? '⚠️ \$${remaining.toStringAsFixed(2)} remaining'
+                    : '\$${remaining.toStringAsFixed(2)} remaining',
+                style: TextStyle(
+                    fontSize: 12,
+                    color: rawProgress >= 1.0
+                        ? const Color(0xFFE53935)
+                        : rawProgress >= 0.8
+                        ? const Color(0xFFF57C00)
+                        : const Color(0xFF16A34A),
+                    fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+        ),
+        // Edit button
+        IconButton(
+          icon: Icon(Icons.edit_outlined, color: _kTeal, size: 20),
+          tooltip: 'Edit limit',
+          onPressed: () => _showAddOrEditDialog(context, existing: budget),
+        ),
+        // Delete button
+        IconButton(
+          icon: Icon(Icons.delete_outline_rounded,
+              color: _textSecondary.withOpacity(0.6), size: 20),
+          tooltip: 'Delete budget',
+          onPressed: () => _confirmDelete(context, budget),
+        ),
+        ]),
+    const SizedBox(height: 14),
+
+
