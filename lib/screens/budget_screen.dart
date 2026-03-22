@@ -188,3 +188,37 @@ class _BudgetScreenState extends State<BudgetScreen> {
       },
     );
   }
+
+  // ── Empty state ─────────────────────────────────────────────────────────────
+  Widget _emptyState() => Center(
+    child: Padding(
+      padding: const EdgeInsets.only(top: 60),
+      child: Column(
+        children: [
+          Icon(Icons.account_balance_wallet_outlined,
+              size: 64,
+              color:
+              _dark ? const Color(0xFF374151) : Colors.grey[300]),
+          const SizedBox(height: 14),
+          Text('No budgets set up yet',
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: _textPrimary)),
+          const SizedBox(height: 6),
+          Text('Tap "Add Budget" to set spending limits\nfor your categories.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: _textSecondary, fontSize: 13)),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: () => _showAddOrEditDialog(context),
+            icon: const Icon(Icons.add),
+            label: const Text('Add First Budget'),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: _kTeal, foregroundColor: Colors.white),
+          ),
+        ],
+      ),
+    ),
+  );
+
