@@ -1,7 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'setting_screen_backend.dart';
+import '../services/gmail_connection_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -12,6 +14,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final SettingsProvider _settingsProvider = SettingsProvider();
+  final GmailConnectionService _gmailService = GmailConnectionService();
 
   final List<Map<String, String>> _languages = [
     {'name': 'English', 'script': 'English'},
@@ -70,60 +73,59 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
-          floatingActionButton: SizedBox(
-            height: 64,
-            width: 64,
-            child: FloatingActionButton(
-              onPressed: () {},
-              backgroundColor: const Color(0xFF4F46E5),
-              shape: const CircleBorder(),
-              elevation: 4,
-              child: const Icon(Icons.add, color: Colors.white, size: 32),
-            ),
-          ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-          bottomNavigationBar: _buildBottomNavigationBar(),
         );
       },
     );
   }
 
   PreferredSizeWidget _buildAppBar() {
-    return PreferredSize(
-      preferredSize: const Size.fromHeight(kToolbarHeight),
-      child: Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFF00966D), // Exact Teal background from screenshot
-        ),
-        child: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          title: Row(
-            children: [
-              const Text(
-                'Vello',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w400, // Normal font weight
-                  fontSize: 20,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.menu, color: Colors.white, size: 22),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 22),
-              onPressed: () {},
-            ),
-            const SizedBox(width: 4),
-          ],
+    return AppBar(
+      backgroundColor: const Color(0xFF00966D),
+      elevation: 0,
+      title: const Text(
+        'Settings', // Literal 'Settings' as requested
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w400,
+          fontSize: 20,
         ),
       ),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: () => Navigator.pop(context),
+      ),
+      // Actions (Menu/Gear) REMOVED as requested
     );
+  }
+
+  Future<void> _handleEmailBillsToggle(bool value) async {
+    if (value) {
+      // Trying to enable
+      try {
+        final userId = Supabase.instance.client.auth.currentUser?.id;
+        if (userId == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please log in first')),
+          );
+          return;
+        }
+
+        await _gmailService.connectGmail(userId);
+        await _settingsProvider.setEmailBills(true);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gmail connected successfully!')),
+        );
+      } catch (e) {
+        debugPrint('Gmail connection failed: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to connect Gmail. Please try again.')),
+        );
+      }
+    } else {
+      // Disabling (could optionally disconnect from Google here too)
+      await _settingsProvider.setEmailBills(false);
+    }
   }
 
   Widget _buildHeader() {
@@ -254,7 +256,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: t('Email Bills'),
             subtitle: t('Auto-detect bills from Gmail'),
             value: _settingsProvider.emailBills,
-            onChanged: (val) => _settingsProvider.setEmailBills(val),
+            onChanged: (val) => _handleEmailBillsToggle(val),
           ),
           Divider(height: 1, color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6), indent: 16, endIndent: 16),
           _buildSwitchTile(
