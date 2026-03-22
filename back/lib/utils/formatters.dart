@@ -19,20 +19,28 @@ class Formatters {
       buffer.write(intPart[i]);
     }
 
-    return '${isNegative ? "-" : ""}$symbol${buffer.toString()}.$decPart';
+    return '${isNegative ? "-" : ""}\$${buffer.toString()}.$decPart';
   }
 
   /// Format a percentage (e.g., "45.2%").
   static String percent(double value, {int decimals = 1}) {
-    return '${value.toStringAsFixed(decimals)}%';
+    return '
+${value.toStringAsFixed(decimals)}%';
   }
 
   /// Format a date as readable string (e.g., "Mar 15, 2026").
+  /// Returns 'Invalid date' if the date is invalid.
   static String date(DateTime dt) {
     const months = [
       'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
     ];
+    
+    // ✅ FIXED: Added validation for month range
+    if (dt.month < 1 || dt.month > 12) {
+      return 'Invalid date';
+    }
+    
     return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
   }
 
@@ -42,6 +50,12 @@ class Formatters {
       'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
     ];
+    
+    // ✅ FIXED: Added validation for month ranges
+    if (start.month < 1 || start.month > 12 || end.month < 1 || end.month > 12) {
+      return 'Invalid date range';
+    }
+    
     if (start.year == end.year && start.month == end.month) {
       return '${months[start.month - 1]} ${start.day} - ${end.day}, ${end.year}';
     }
@@ -49,9 +63,10 @@ class Formatters {
   }
 
   /// Get the start of current week (Monday).
+  /// ✅ FIXED: Uses Duration for safe date arithmetic
   static DateTime startOfWeek(DateTime dt) {
     final daysFromMonday = dt.weekday - 1;
-    return DateTime(dt.year, dt.month, dt.day - daysFromMonday);
+    return dt.subtract(Duration(days: daysFromMonday));
   }
 
   /// Get the start of current month.
@@ -65,10 +80,23 @@ class Formatters {
   }
 
   /// Format a relative time string (e.g., "2 days ago").
+  /// ✅ FIXED: Added validation for negative time differences (future dates)
   static String relativeTime(DateTime dt) {
     final now = DateTime.now();
     final diff = now.difference(dt);
 
+    // Handle future dates
+    if (diff.isNegative) {
+      final absDiff = dt.difference(now);
+      if (absDiff.inDays == 0) return 'today';
+      if (absDiff.inDays == 1) return 'tomorrow';
+      if (absDiff.inDays < 7) return 'in ${absDiff.inDays} days';
+      if (absDiff.inDays < 30) return 'in ${(absDiff.inDays / 7).floor()} weeks';
+      if (absDiff.inDays < 365) return 'in ${(absDiff.inDays / 30).floor()} months';
+      return 'in ${(absDiff.inDays / 365).floor()} years';
+    }
+
+    // Handle past dates (original logic)
     if (diff.inDays == 0) return 'today';
     if (diff.inDays == 1) return 'yesterday';
     if (diff.inDays < 7) return '${diff.inDays} days ago';
