@@ -222,3 +222,100 @@ class _BudgetScreenState extends State<BudgetScreen> {
     ),
   );
 
+  // ── Summary card ────────────────────────────────────────────────────────────
+  Widget _summaryCard(List<Budget> budgets) {
+    final totalLimit = budgets.fold(0.0, (s, b) => s + b.limit);
+    final totalSpent = budgets.fold(0.0, (s, b) => s + b.spent);
+    final overCount  = budgets.where((b) => b.spent > b.limit).length;
+    final progress   = totalLimit > 0
+        ? (totalSpent / totalLimit).clamp(0.0, 1.0)
+        : 0.0;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF26a69a), Color(0xFF0DBE82)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+              color: _kTeal.withOpacity(0.35),
+              blurRadius: 16,
+              offset: const Offset(0, 8)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            const Text('Monthly Budget',
+                style: TextStyle(color: Colors.white70, fontSize: 14)),
+            const Spacer(),
+            if (overCount > 0)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.25),
+                    borderRadius: BorderRadius.circular(20)),
+                child: Text('$overCount over limit',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600)),
+              ),
+          ]),
+          const SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text('\$${totalSpent.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700)),
+              const SizedBox(width: 6),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text('/ \$${totalLimit.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                        color: Colors.white70, fontSize: 15)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 8,
+              backgroundColor: Colors.white24,
+              valueColor: AlwaysStoppedAnimation(
+                  totalSpent > totalLimit ? Colors.red.shade300 : Colors.white),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(children: [
+            Text('${(progress * 100).toStringAsFixed(1)}% used',
+                style: const TextStyle(
+                    color: Colors.white70, fontSize: 12)),
+            const Spacer(),
+            Text(
+                '\$${(totalLimit - totalSpent).abs().toStringAsFixed(2)} '
+                    '${totalSpent > totalLimit ? 'over' : 'remaining'}',
+                style: TextStyle(
+                    color: totalSpent > totalLimit
+                        ? Colors.red.shade200
+                        : Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600)),
+          ]),
+        ],
+      ),
+    );
+  }
+
