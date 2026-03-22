@@ -6,7 +6,7 @@ class TransactionModel {
   final String title;
   final double amount;
   final String category;
-  final String type; // 'income' or 'expense'
+  final String type;
   final DateTime date;
   final DateTime createdAt;
 
@@ -21,7 +21,6 @@ class TransactionModel {
     required this.createdAt,
   });
 
-  // Convert to Map for Firestore
   Map<String, dynamic> toMap() {
     return {
       'userId': userId,
@@ -34,32 +33,16 @@ class TransactionModel {
     };
   }
 
-  // Create from Firestore document
-  factory TransactionModel.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-    return TransactionModel(
-      id: doc.id,
-      userId: data['userId'] ?? '',
-      title: data['title'] ?? '',
-      amount: (data['amount'] ?? 0).toDouble(),
-      category: data['category'] ?? '',
-      type: data['type'] ?? 'expense',
-      date: (data['date'] as Timestamp).toDate(),
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-    );
-  }
-
-  // Create from Map
-  factory TransactionModel.fromMap(Map<String, dynamic> data, String id) {
+  factory TransactionModel.fromMap(String id, Map<String, dynamic> data) {
     return TransactionModel(
       id: id,
-      userId: data['userId'] ?? '',
-      title: data['title'] ?? '',
-      amount: (data['amount'] ?? 0).toDouble(),
-      category: data['category'] ?? '',
-      type: data['type'] ?? 'expense',
-      date: (data['date'] as Timestamp).toDate(),
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      userId: data['userId'] as String? ?? '',
+      title: data['title'] as String? ?? '',
+      amount: (data['amount'] as num?)?.toDouble() ?? 0.0,
+      category: data['category'] as String? ?? '',
+      type: data['type'] as String? ?? 'expense',
+      date: (data['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 }
