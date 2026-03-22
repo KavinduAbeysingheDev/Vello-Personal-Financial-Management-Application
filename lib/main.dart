@@ -1,28 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
+
+import 'firebase_options.dart';
+import 'screens/splash_screen.dart';
+import 'services/app_provider.dart';
+
 import 'Saving_goals/saving_goals_frontend.dart';
 import 'Statistic/Statistic_Frontend.dart';
 import 'AI/AI_frontend.dart';
-
 import 'Saving_goals/saving_goals_painter.dart';
 
-void main() {
-  runApp(const VelloApp());
-import 'package:firebase_core/firebase_core.dart';
-import 'features/bill_scanner/bill_scanner_screen.dart';
-import 'features/gmail_detector/gmail_detector_service.dart';
-import 'features/sms_detector/sms_detector_service.dart';
-import 'firebase_options.dart';
-
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => AppProvider(),
+      child: const VelloApp(),
+    ),
+  );
 }
 
 class VelloApp extends StatelessWidget {
-  // Corrected constructor name to match the class name
   const VelloApp({super.key});
 
   @override
@@ -33,8 +37,9 @@ class VelloApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF03724E)),
         useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFFF3F4F6),
       ),
-      home: const MainScreen(),
+      home: const _AppLoader(),
       routes: {
         '/savings': (context) => const SavingsGoalsScreen(),
         '/ai': (context) => const AIFinanceScreen(),
@@ -44,9 +49,42 @@ class VelloApp extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN NAVIGATION WRAPPER (Global Header & Footer)
-// ─────────────────────────────────────────────────────────────────────────────
+class _AppLoader extends StatefulWidget {
+  const _AppLoader();
+
+  @override
+  State<_AppLoader> createState() => _AppLoaderState();
+}
+
+class _AppLoaderState extends State<_AppLoader> {
+  late Future<void> _loadFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFuture = Provider.of<AppProvider>(context, listen: false).loadAll();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<void>(
+      future: _loadFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Scaffold(
+            backgroundColor: Color(0xFF004D40),
+            body: Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
+          );
+        }
+
+        return const SplashScreen();
+      },
+    );
+  }
+}
+
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -57,10 +95,8 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
-  // List of screens available in the navigation bar
-  // 0: Home (Wallet icon), 1: Scan (Camera), 2: Add, 3: Events (Calendar icon), 4: AI (Robot icon)
   final List<Widget> _screens = [
-    const SavingsGoalsScreen(), // Index 0: Home (Mapped to Savings Goals for now as it's the most wallet-related)
+    const SavingsGoalsScreen(),
     const Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -70,16 +106,15 @@ class _MainScreenState extends State<MainScreen> {
           Text('Scan / QR\n(Placeholder)', textAlign: TextAlign.center),
         ],
       ),
-    ), // Index 1: Scan
-    const Center(child: Text('Add Transaction Placeholder')), // Index 2: Add
-    const StatisticScreen(), // Index 3: Events (Mapped to Statistics)
-    const AIFinanceScreen(), // Index 4: AI
+    ),
+    const Center(child: Text('Add Transaction Placeholder')),
+    const StatisticScreen(),
+    const AIFinanceScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Global Header consistently visible across all main screens
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -131,7 +166,10 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
       ),
-      body: IndexedStack(index: _currentIndex, children: _screens),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _screens,
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -150,11 +188,11 @@ class _MainScreenState extends State<MainScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildNavItem(0, Icons.account_balance_wallet_outlined, 'Home'), // Wallet Icon
-                _buildNavItem(1, Icons.camera_alt_outlined, 'Scan'), // Camera/QR Icon
+                _buildNavItem(0, Icons.account_balance_wallet_outlined, 'Home'),
+                _buildNavItem(1, Icons.camera_alt_outlined, 'Scan'),
                 _buildCenterAddButton(),
-                _buildNavItem(3, Icons.calendar_today_outlined, 'Events'), // Calendar Icon
-                _buildNavItem(4, Icons.smart_toy_outlined, 'AI'), // Robot Icon
+                _buildNavItem(3, Icons.calendar_today_outlined, 'Events'),
+                _buildNavItem(4, Icons.smart_toy_outlined, 'AI'),
               ],
             ),
           ),
@@ -165,9 +203,8 @@ class _MainScreenState extends State<MainScreen> {
 
   Widget _buildNavItem(int index, IconData icon, String label) {
     final isSelected = _currentIndex == index;
-    final color = isSelected
-        ? const Color(0xFF059669)
-        : const Color(0xFF9CA3AF);
+    final color =
+        isSelected ? const Color(0xFF059669) : const Color(0xFF9CA3AF);
 
     return InkWell(
       onTap: () => setState(() => _currentIndex = index),
