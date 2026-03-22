@@ -95,7 +95,6 @@ Vello/
     └── app.log
 
 #License
-
 MIT License
 
 Copyright (c) 2026 Vello Team
