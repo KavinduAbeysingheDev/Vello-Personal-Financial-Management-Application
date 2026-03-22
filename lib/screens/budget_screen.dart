@@ -42,3 +42,10 @@ class _BudgetScreenState extends State<BudgetScreen> {
   final _financeService = FinanceService();
   final _userId = FirebaseAuth.instance.currentUser!.uid;
 
+  bool  get _dark => appTheme.isDark;
+  Color get _scaffoldBg => _dark ? const Color(0xFF111827) : const Color(0xFFF5F7FA);
+  Color get _cardBg     => _dark ? const Color(0xFF1F2937) : Colors.white;
+  Color get _borderClr  => _dark ? const Color(0xFF374151) : const Color(0xFFE5E7EB);
+  Color get _textPrimary   => _dark ? Colors.white : const Color(0xFF111111);
+  Color get _textSecondary => _dark ? const Color(0xFF9CA3AF) : Colors.grey.shade600;
+  Color get _inputFill  => _dark ? const Color(0xFF111827) : const Color(0xFFF9FAFB);
