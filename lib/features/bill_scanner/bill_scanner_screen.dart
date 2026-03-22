@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../services/app_provider.dart';
+import '../../models/app_models.dart';
 import 'bill_scanner_service.dart';
+import '../../widgets/vello_top_bar.dart';
+import '../../widgets/vello_drawer.dart';
+import 'package:uuid/uuid.dart';
 
 class _C {
   static const primary         = Color(0xFF00674F);
@@ -31,6 +37,7 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
   final BillScannerService _scannerService = BillScannerService();
   bool _isLoading = false;
   bool _isMultiPhotoMode = false;
+  String? _scannedAmount;
 
   @override
   void dispose() {
@@ -39,6 +46,19 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
   }
 
   Future<void> _takePhoto() async {
+    final confirmed = await _showInstructionsDialog(
+      title: 'Tips for Best Results',
+      instructions: [
+        'Ensure good lighting — avoid shadows on the bill',
+        'Hold the camera steady and close to the bill',
+        'Make sure all text is clearly visible',
+        'Keep the bill flat and unwrinkled',
+      ],
+      buttonText: 'OK, Take Photo',
+    );
+
+    if (confirmed != true) return;
+
     setState(() => _isLoading = true);
     try {
       String? amount;
@@ -48,7 +68,9 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
         amount = await _scannerService.scanAndGetAmount();
       }
       if (!mounted) return;
-      if (amount != null) _showSnack('Scanned: Rs. $amount');
+      if (amount != null) {
+        setState(() => _scannedAmount = amount);
+      }
     } catch (e) {
       if (!mounted) return;
       _showSnack('Error: $e', isError: true);
@@ -58,12 +80,25 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
   }
 
   Future<void> _uploadPhoto() async {
+    final confirmed = await _showInstructionsDialog(
+      title: 'Tips for Best Upload',
+      instructions: [
+        'Use a clear, well-lit photo of the bill',
+        'Make sure all text is readable',
+        'Avoid blurry or dark images',
+        'The bill should fill most of the image',
+      ],
+      buttonText: 'OK, Upload',
+    );
+
+    if (confirmed != true) return;
+
     setState(() => _isLoading = true);
     try {
       final amount = await _scannerService.scanFromGallery();
       if (!mounted) return;
       if (amount != null) {
-        _showSnack('Scanned: Rs. $amount');
+        setState(() => _scannedAmount = amount);
       } else {
         _showSnack('Gallery access denied or no image selected.', isError: true);
       }
@@ -73,6 +108,76 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<bool?> _showInstructionsDialog({
+    required String title,
+    required List<String> instructions,
+    required String buttonText,
+  }) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        contentPadding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ...instructions.map((text) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(top: 6),
+                        child: Icon(Icons.circle, size: 6, color: Color(0xFF00674F)),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          text,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: Color(0xFF4B5563),
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00674F),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text(
+                  buttonText,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showSnack(String msg, {bool isError = false}) {
@@ -90,6 +195,8 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _C.background,
+      appBar: const VelloTopBar(),
+      endDrawer: const VelloDrawer(),
       body: SafeArea(child: _buildBody()),
     );
   }
@@ -121,9 +228,142 @@ class _BillScannerScreenState extends State<BillScannerScreen> {
             _buildCaptureCard(),
             const SizedBox(height: 14),
             _buildInfoCard(),
+            if (_scannedAmount != null) ...[
+              const SizedBox(height: 20),
+              _buildScannedTotalCard(),
+            ],
           ],
         ),
       );
+
+  Widget _buildScannedTotalCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: _C.card,
+        borderRadius: _R.lg,
+        border: Border.all(color: _C.border, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.receipt_long_outlined, color: _C.primary, size: 20),
+              const SizedBox(width: 8),
+              const Text(
+                'Scanned Total',
+                style: TextStyle(
+                  color: _C.cardForeground,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 32),
+          Center(
+            child: Column(
+              children: [
+                Text(
+                  'Rs. $_scannedAmount',
+                  style: const TextStyle(
+                    color: _C.primary,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Total payable amount',
+                  style: TextStyle(
+                    color: _C.mutedForeground,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 28),
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: SizedBox(
+                  height: 50,
+                  child: ElevatedButton.icon(
+                    onPressed: _isLoading ? null : _saveScannedTransaction,
+                    icon: const Icon(Icons.add_circle_outline, size: 18),
+                    label: const Text(
+                      'Add Transaction',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _C.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: _R.md),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: SizedBox(
+                  height: 50,
+                  child: OutlinedButton(
+                    onPressed: () => setState(() => _scannedAmount = null),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: _C.mutedForeground,
+                      side: BorderSide(color: Colors.grey.shade300),
+                      shape: RoundedRectangleBorder(borderRadius: _R.md),
+                    ),
+                    child: const Text('Cancel'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _saveScannedTransaction() async {
+    if (_scannedAmount == null) return;
+    final amount = double.tryParse(_scannedAmount!) ?? 0;
+    if (amount <= 0) {
+      _showSnack('Invalid scanned amount found.', isError: true);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      final provider = Provider.of<AppProvider>(context, listen: false);
+      
+      final newTx = AppTransaction(
+        id: const Uuid().v4(),
+        title: 'Bill Scan: ${DateTime.now().day}/${DateTime.now().month}',
+        amount: amount,
+        category: 'Shopping', 
+        date: DateTime.now(),
+        type: TransactionType.expense,
+        icon: Icons.receipt_long,
+      );
+
+      await provider.addTransaction(newTx);
+      
+      if (!mounted) return;
+      _showSnack('Transaction of Rs. $amount added successfully!');
+      setState(() => _scannedAmount = null);
+    } catch (e) {
+      if (!mounted) return;
+      _showSnack('Failed to save: $e', isError: true);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   Widget _buildCaptureCard() => Container(
         width: double.infinity,
