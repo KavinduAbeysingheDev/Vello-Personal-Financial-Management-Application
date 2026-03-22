@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
-import 'event_planner_screen.dart';
-import 'scan_screen.dart';
-import 'ai_assistant_screen.dart';
-import 'add_transaction_screen.dart';
+import '../screens/home_screen.dart';
+import '../screens/event_planner_screen.dart';
+import '../features/bill_scanner/bill_scanner_screen.dart';
+import '../AI/AI_frontend.dart';
+import '../screens/add_transaction_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -39,10 +39,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     Timer(const Duration(seconds: 3), () {
       if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
-      );
+      // Navigate to AppLoader to initialize Supabase data
+      Navigator.pushReplacementNamed(context, '/load');
     });
   }
 
@@ -141,10 +139,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     super.initState();
     pages = [
       const HomeScreen(),
-      const ScanScreen(),
+      const BillScannerScreen(),
       AddTransactionScreen(onSaved: () => setState(() => selectedIndex = 0)),
       const EventPlannerScreen(),
-      const AIAssistantScreen(),
+      const AIFinanceScreen(),
     ];
   }
 
