@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/auth_service.dart';
 import '../models/user_model.dart';
 import 'login_screen.dart';
+import 'settings_screen_frontend.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -248,6 +249,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     icon: Icons.lock_outline,
                     label: 'Change Password',
                     onTap: () => _handleChangePassword(),
+                  ),
+                  _buildDivider(),
+                  _buildActionTile(
+                    icon: Icons.settings_outlined,
+                    label: 'Settings',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SettingsScreen(),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
