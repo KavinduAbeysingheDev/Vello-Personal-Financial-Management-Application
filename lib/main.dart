@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'screens/register_screen.dart';
+
+void main() {
+  runApp(const VelloApp());
 import 'package:firebase_core/firebase_core.dart';
 import 'features/bill_scanner/bill_scanner_screen.dart';
 import 'features/gmail_detector/gmail_detector_service.dart';
@@ -13,12 +17,23 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class VelloApp extends StatelessWidget {
+  // Corrected constructor name to match the class name
+  const VelloApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Vello Financial',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.teal,
+        useMaterial3: true,
+      ),
+      // This loads your register_screen.dart file
+      home: const RegisterScreen(),
+    );
+  }
       debugShowCheckedModeBanner: false,
       title: 'Vello App',
       theme: ThemeData(
