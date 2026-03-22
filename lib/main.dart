@@ -6,11 +6,24 @@ import 'AI/AI_frontend.dart';
 import 'Saving_goals/saving_goals_painter.dart';
 
 void main() {
+  runApp(const VelloApp());
+import 'package:firebase_core/firebase_core.dart';
+import 'features/bill_scanner/bill_scanner_screen.dart';
+import 'features/gmail_detector/gmail_detector_service.dart';
+import 'features/sms_detector/sms_detector_service.dart';
+import 'firebase_options.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class VelloApp extends StatelessWidget {
+  // Corrected constructor name to match the class name
+  const VelloApp({super.key});
 
   @override
   Widget build(BuildContext context) {
