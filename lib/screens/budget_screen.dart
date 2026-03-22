@@ -30,3 +30,15 @@ _CatConfig _configFor(String category) =>
     _categories.firstWhere((c) => c.name == category,
         orElse: () => _CatConfig(
             category, Icons.category_rounded, const Color(0xFF78909C)));
+
+class BudgetScreen extends StatefulWidget {
+  const BudgetScreen({super.key});
+
+  @override
+  State<BudgetScreen> createState() => _BudgetScreenState();
+}
+
+class _BudgetScreenState extends State<BudgetScreen> {
+  final _financeService = FinanceService();
+  final _userId = FirebaseAuth.instance.currentUser!.uid;
+
