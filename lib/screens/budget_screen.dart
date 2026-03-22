@@ -759,6 +759,52 @@ class _BudgetScreenState extends State<BudgetScreen> {
     );
   }
 
+  // ── Delete confirmation ─────────────────────────────────────────────────────
+  Future<void> _confirmDelete(BuildContext context, Budget budget) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: _cardBg,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Delete Budget',
+            style: TextStyle(color: _textPrimary)),
+        content: Text(
+            'Remove the ${budget.category} budget of \$${budget.limit.toStringAsFixed(2)}?',
+            style: TextStyle(color: _textSecondary)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel',
+                style: TextStyle(color: _textSecondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete',
+                style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await _financeService.deleteBudget(budget.id);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('${budget.category} budget removed'),
+            backgroundColor: _kTeal,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)),
+          ));
+        }
+      } catch (e) {
+        debugPrint('Delete error: $e');
+      }
+    }
+  }
+}
+
 
 
 
