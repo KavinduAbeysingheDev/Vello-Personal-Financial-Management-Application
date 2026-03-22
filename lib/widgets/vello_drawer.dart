@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import '../screens/drawer_screens/weekly_planner_screen.dart';
 import '../screens/drawer_screens/statistics_screen.dart';
 import '../screens/drawer_screens/savings_goals_screen.dart';
-import '../screens/drawer_screens/subscription_manager_screen.dart';
-import '../screens/drawer_screens/debt_tracker_screen.dart';
-import '../screens/drawer_screens/voice_expense_screen.dart';
-import '../screens/drawer_screens/financial_health_screen.dart';
+import '../screens/drawer_screens/budget_screen.dart';
+import '../all transactions/alltransactions_frontend.dart';
+import '../screens/connect_data_sources_screen.dart';
 
 class VelloDrawer extends StatelessWidget {
   const VelloDrawer({super.key});
@@ -54,15 +52,11 @@ class VelloDrawer extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            _menuItem(context, Icons.calendar_month_outlined, 'Weekly Planner', 'AI-powered budget planning', const WeeklyPlannerScreen()),
             _menuItem(context, Icons.bar_chart_outlined, 'Statistics', 'View spending analytics', const StatisticsScreen()),
+            _menuItem(context, Icons.account_balance_wallet_outlined, 'Budgets', 'Set spending limits by category', BudgetScreen()),
             _menuItem(context, Icons.flag_outlined, 'Savings Goals', 'Set and track savings goals', const SavingsGoalsScreen()),
-            _menuItem(context, Icons.subscriptions_outlined, 'Subscription Manager', 'Manage and cancel subscriptions', const SubscriptionManagerScreen()),
-            _menuItem(context, Icons.money_off_outlined, 'Debt Tracker', 'Track and manage debt', const DebtTrackerScreen()),
-            _menuItem(context, Icons.mic_none_outlined, 'Voice Expense', 'Add expenses using voice', const VoiceExpenseScreen()),
-            _menuItem(context, Icons.health_and_safety_outlined, 'Financial Health', 'Access your financial health', const FinancialHealthScreen()),
-            const Divider(height: 32, thickness: 1, color: Color(0xFFE5E7EB)),
-            _menuItem(context, Icons.settings_outlined, 'Settings', 'App preferences and notifications', null),
+            _menuItem(context, Icons.list_alt, 'All Transactions', 'View complete transaction history', const AllTransactionsScreen()),
+            _menuItem(context, Icons.sync_alt, 'Connect Data Sources', 'Link SMS and Gmail feeds', const ConnectDataSourcesScreen()),
             const SizedBox(height: 20),
           ],
         ),
@@ -94,10 +88,6 @@ class VelloDrawer extends StatelessWidget {
           );
         }
       },
-    );
-  }
-        ),
-      ),
     );
   }
 }
