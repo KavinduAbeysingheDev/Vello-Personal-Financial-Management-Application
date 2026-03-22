@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../all transactions/alltransactions_backend.dart';
+import '../models/app_models.dart';
+import '../screens/connect_data_sources_screen.dart';
+import 'package:intl/intl.dart';
 
 class AllTransactionsScreen extends StatelessWidget {
   const AllTransactionsScreen({super.key});
@@ -25,7 +28,15 @@ class AllTransactionsScreen extends StatelessWidget {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.normal, fontSize: 22),
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.menu, color: Colors.white, size: 24), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.sync, color: Colors.white, size: 24), 
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ConnectDataSourcesScreen()),
+              );
+            }
+          ),
           IconButton(icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 24), onPressed: () {}),
         ],
       ),
@@ -66,10 +77,10 @@ class AllTransactionsScreen extends StatelessWidget {
                         itemCount: transactions.length,
                         itemBuilder: (context, index) {
                           final tx = transactions[index];
-                          final bool isExpense = tx.isExpense;
+                          final bool isExpense = tx.type == TransactionType.expense;
                           final String amountStr =
                               (isExpense ? '-' : '+') + r'$' + tx.amount.toStringAsFixed(2);
-                          final String dateStr = _formatDate(tx.date);
+                          final String dateStr = DateFormat('MMM dd, yyyy').format(tx.date);
 
                           return Container(
                             margin: const EdgeInsets.only(bottom: 10),
