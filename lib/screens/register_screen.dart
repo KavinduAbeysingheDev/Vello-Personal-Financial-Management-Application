@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/auth_service.dart';
 import 'home_screen.dart';
 
@@ -47,19 +47,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
             MaterialPageRoute(builder: (context) => const HomeScreen()),
           );
         }
-      } on FirebaseAuthException catch (e) {
-        String message = 'An error occurred';
-        if (e.code == 'weak-password') {
-          message = 'The password is too weak';
-        } else if (e.code == 'email-already-in-use') {
-          message = 'An account already exists with this email';
-        } else if (e.code == 'invalid-email') {
-          message = 'Invalid email address';
-        }
-
+      } on AuthException catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(message), backgroundColor: Colors.red),
+            SnackBar(content: Text(e.message), backgroundColor: Colors.red),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
           );
         }
       } finally {
@@ -73,7 +70,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      body: Container( // creating a background gradiant
+      body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -81,7 +78,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             colors: [Color(0xFF26a69a), Color(0xFF1e8c82)],
           )
         ),
-        child: SafeArea( // push the content down to prevent content from impact with the phones notches and status bars
+        child: SafeArea(
           child: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -89,7 +86,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 40),
-                  // Making the vello logo appear on the top of the page
                   Center(
                     child: Image.asset(
                       'assets/images/vello_logo.png',
@@ -98,7 +94,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       fit: BoxFit.contain
                     ),
                   ),
-                  // Add the Application Name
                   const SizedBox(height: 20),
                   const Text(
                     'Vello',
@@ -110,7 +105,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       letterSpacing: 3,
                     ),
                   ),
-                  // Adding the header text
                   const SizedBox(height: 30),
                   const Text(
                     'Create Account',
@@ -121,7 +115,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       color: Colors.white,
                     ),
                   ),
-                  // adding the sub header
                   const SizedBox(height: 10),
                   const Text(
                     'Start managing your finances today',
@@ -132,7 +125,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                   const SizedBox(height: 30),
-                  // Create the registration form
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
@@ -150,7 +142,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       key: _formKey,
                       child: Column(
                         children: [
-                          // Name Field
                           TextFormField(
                             controller: _nameController,
                             decoration: InputDecoration(
@@ -178,8 +169,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               return null;
                             },
                           ),
-                          const SizedBox(height: 20), // add a empty space
-                          // Email Field
+                          const SizedBox(height: 20),
                           TextFormField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
@@ -212,7 +202,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             },
                           ),
                           const SizedBox(height: 20),
-                          // Password Field
                           TextFormField(
                             controller: _passwordController,
                             obscureText: _obscurePassword,
@@ -258,7 +247,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             },
                           ),
                           const SizedBox(height: 20,),
-                          // Confirm Password Field
                           TextFormField(
                             controller: _confirmPasswordController,
                             obscureText: _obscureConfirmPassword,
@@ -305,7 +293,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             },
                           ),
                           const SizedBox(height: 30),
-                          // Add the register button
                           SizedBox(
                             width: double.infinity,
                             height: 50,
@@ -344,7 +331,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     )
                   ),
                   const SizedBox(height: 20),
-                  // Login Link
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -359,7 +345,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            // decoration: TextDecoration.underline,
                           ),
                         ),
                       ),

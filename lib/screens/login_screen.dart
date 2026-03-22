@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/auth_service.dart';
 import 'register_screen.dart';
 import 'home_screen.dart';
@@ -7,7 +7,7 @@ import 'home_screen.dart';
 class LoginScreen extends StatefulWidget{
   const LoginScreen({super.key});
 
-  @Override
+  @override
   State<LoginScreen> createState()=> _LoginScreenState();
 }
 
@@ -42,22 +42,19 @@ class _LoginScreenState extends State<LoginScreen> {
             MaterialPageRoute(builder: (context) => const HomeScreen()),
           );
         }
-      } on FirebaseAuthException catch (e) {
-        String message = 'An error occurred';
-        if (e.code == 'user-not-found') {
-          message = 'No user found with this email';
-        } else if (e.code == 'wrong-password') {
-          message = 'Wrong password';
-        } else if (e.code == 'invalid-email') {
-          message = 'Invalid email address';
-        }
-
+      } on AuthException catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(message), backgroundColor: Colors.red),
+            SnackBar(content: Text(e.message), backgroundColor: Colors.red),
           );
         }
-      }finally {
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          );
+        }
+      } finally {
         if (mounted) {
           setState(() => _isLoading = false);
         }
@@ -133,11 +130,11 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           );
         }
-      } on FirebaseAuthException catch (e) {
+      } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(e.message ?? 'Failed to send reset email'),
+              content: Text('Failed to send reset email: $e'),
               backgroundColor: Colors.red,
             ),
           );
@@ -165,7 +162,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 60),
-                  // Add the Vello Logo
                   Center(
                     child: Image.asset(
                       'assets/images/vello_logo.png',
@@ -175,7 +171,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // Add the App name and details
                   const Text(
                     'Vello',
                     textAlign: TextAlign.center,
@@ -217,7 +212,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 40),
-                  // Login Form
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
@@ -235,7 +229,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       key: _formKey,
                       child: Column(
                         children: [
-                          // Email Field
                           TextFormField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
@@ -257,7 +250,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                     const BorderSide(color: Color(0xFF26a69a)),
                               ),
                             ),
-                            // Email Validator
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter your email';
@@ -269,7 +261,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                           ),
                           const SizedBox(height: 20),
-                          // Password Field
                           TextFormField(
                             controller: _passwordController,
                             obscureText: _obscurePassword,
@@ -277,7 +268,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               labelText: 'Password',
                               prefixIcon: const Icon(Icons.lock_outline,
                                   color: Color(0xFF26a69a)),
-                              // show ore hide password option
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _obscurePassword ?
@@ -305,7 +295,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                     const BorderSide(color: Color(0xFF26a69a)),
                               ),
                             ),
-                            // Password validation
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter your password';
@@ -316,7 +305,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               return null;
                             },
                           ),
-                          // Forgot Password link
                           Align(
                             alignment: Alignment.centerRight,
                             child: TextButton(
@@ -331,7 +319,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           const SizedBox(height: 6),
-                          // the login button
                           SizedBox(
                             width: double.infinity,
                             height: 50,
@@ -370,7 +357,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // Register Link
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

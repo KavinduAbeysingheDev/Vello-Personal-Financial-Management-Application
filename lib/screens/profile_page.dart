@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/auth_service.dart';
 import '../models/user_model.dart';
 import 'login_screen.dart';
@@ -25,13 +25,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadUserData() async {
     try {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid != null) {
-        final user = await _authService.getUserData(uid);
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) {
+        final userData = await _authService.getUserData(user.id);
         setState(() {
-          _userModel = user;
+          _userModel = userData;
           _isLoading = false;
         });
+      } else {
+        setState(() => _isLoading = false);
       }
     } catch (e) {
       setState(() => _isLoading = false);
@@ -87,7 +89,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final firebaseUser = FirebaseAuth.instance.currentUser;
+    final supabaseUser = Supabase.instance.client.auth.currentUser;
 
     return Scaffold(
         backgroundColor: Colors.grey[50],
@@ -105,7 +107,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             : SingleChildScrollView(
           child: Column(
             children: [
-            // Header with avatar
             Container(
             width: double.infinity,
             decoration: const BoxDecoration(
@@ -119,7 +120,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 top: 30, bottom: 40, left: 24, right: 24),
             child: Column(
               children: [
-                // Avatar circle
                 Container(
                   width: 90,
                   height: 90,
@@ -153,7 +153,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  _userModel?.email ?? firebaseUser?.email ?? '',
+                  _userModel?.email ?? supabaseUser?.email ?? '',
                   style: const TextStyle(
                     fontSize: 14,
                     color: Colors.white70,
@@ -163,7 +163,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
 
-          // Curved connector
           Container(
             height: 24,
             decoration: const BoxDecoration(
@@ -177,7 +176,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           const SizedBox(height: 24),
 
-          // User details card
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Container(
@@ -204,7 +202,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     icon: Icons.email_outlined,
                     label: 'Email Address',
                     value: _userModel?.email ??
-                        firebaseUser?.email ??
+                        supabaseUser?.email ??
                         '—',
                   ),
                   _buildDivider(),
@@ -219,8 +217,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _buildInfoTile(
                     icon: Icons.fingerprint,
                     label: 'User ID',
-                    value: firebaseUser?.uid != null
-                        ? '${firebaseUser!.uid.substring(0, 8)}...'
+                    value: supabaseUser?.id != null
+                        ? '${supabaseUser!.id.substring(0, 8)}...'
                         : '—',
                   ),
                 ],
@@ -230,7 +228,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           const SizedBox(height: 24),
 
-          // Account section
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Container(
@@ -259,7 +256,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           const SizedBox(height: 24),
 
-              // Logout button
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: SizedBox(
@@ -399,9 +395,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _handleChangePassword() async {
+    final user = Supabase.instance.client.auth.currentUser;
     final email = _userModel?.email?.trim().isNotEmpty == true
         ? _userModel!.email.trim()
-        : FirebaseAuth.instance.currentUser?.email;
+        : user?.email;
 
     if (email == null || email.isEmpty) {
       if (mounted) {
@@ -451,7 +448,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (confirm == true) {
       setState(() => _isSendingReset = true);
       try {
-        await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+        await _authService.resetPassword(email);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -461,36 +458,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           );
         }
-      } on FirebaseAuthException catch (e) {
-        if (mounted) {
-          String message;
-          switch (e.code) {
-            case 'user-not-found':
-              message = 'No account found with this email address.';
-              break;
-            case 'invalid-email':
-              message = 'The email address is not valid.';
-              break;
-            case 'too-many-requests':
-              message = 'Too many requests. Please wait a moment and try again.';
-              break;
-            default:
-              message = e.message ?? 'Failed to send reset email. Please try again.';
-          }
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(message),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 4),
-            ),
-          );
-        }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Unexpected error: ${e.toString()}'),
+              content: Text('Failed to send reset email: $e'),
               backgroundColor: Colors.red,
+              duration: const Duration(seconds: 4),
             ),
           );
         }
