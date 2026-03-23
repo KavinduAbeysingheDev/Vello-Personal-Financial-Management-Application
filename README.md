@@ -1,14 +1,14 @@
-# 🌿 Vello – AI-Powered Personal Finance Management Application
+Vello – AI-Powered Personal Finance Management Application
 
-## 📌 Project Overview
+Project Overview
 
 In Sri Lanka, managing personal finances remains a significant challenge for young professionals, university students, and middle-income families. The absence of locally relevant, intelligent, and accessible financial management tools leads to poor expense tracking, unplanned overspending, and low financial literacy. Existing global applications fail to account for Sri Lanka's unique cultural context, including local festival spending patterns, multilingual user needs, and the prevalence of cash-based and SMS-based transactions.
 
 Vello is an AI-powered personal finance management mobile application designed to address these challenges by providing Sri Lankan users with an intelligent, offline-capable, and culturally aware platform for tracking expenses, managing budgets, and achieving financial goals.
 
----
 
-## 🎯 Objectives
+
+Objectives
 
 - Provide a simple and accessible platform for real-time income and expense tracking
 - Automate expense entry through OCR-based receipt scanning and SMS/Gmail bill detection
@@ -19,48 +19,48 @@ Vello is an AI-powered personal finance management mobile application designed t
 
 ---
 
-## 🧩 Key Features
+Key Features
 
-### 💰 Financial Tracking
+Financial Tracking
 - Manual income and expense entry with category assignment
 - Real-time balance updates and savings rate calculation
 - Colour-coded budget progress indicators per spending category
 
-### 📷 Smart Bill Scanner
+Smart Bill Scanner
 - OCR-powered receipt scanning using Google ML Kit
 - Multi-photo support for long or multi-page bills
 - Automatic item extraction and expense categorisation
 
-### 🤖 AI Finance Assistant
+AI Finance Assistant
 - Conversational AI assistant for spending analysis and budget checks
 - Real-time category breakdown and savings rate reporting
 - Personalised savings tips and weekly financial summaries
 
-### 📊 Statistics & Analytics
+Statistics & Analytics
 - Interactive donut chart with category-level spending breakdown
 - Weekly and monthly view toggle
 - Income, spent, and saved summary cards
 
-### 🎯 Savings Goals
+Savings Goals
 - Named savings goals with target amounts, deadlines, and priority levels
 - Animated progress bars with aggregate total progress tracking
 - Add funds functionality with remaining amount display
 
-### 🗓️ Event Planner
+Event Planner
 - Flexible budget planner for any occasion or celebration
 - Per-event spending tracking with remaining budget display
 - Total event budget summary across all active events
 
-### 📩 Auto Bill Detection
+Auto Bill Detection
 - Automatic expense extraction from SMS and Gmail notifications
 - Background parsing of financial keywords without manual input
 
-### 🌐 Accessibility & Localisation
+Accessibility & Localisation
 - Trilingual interface supporting English, Sinhala, and Tamil
 - Dark and light mode support
 - Designed for diverse Sri Lankan demographics including students, professionals, and families
 
-### 🔐 Security & Privacy
+Security & Privacy
 - Secure authentication via Firebase Authentication
 - Encrypted cloud data storage via Firebase Firestore
 - Compliance with the Sri Lanka Personal Data Protection Act
@@ -68,7 +68,7 @@ Vello is an AI-powered personal finance management mobile application designed t
 
 ---
 
-## 🏗️ System Architecture
+System Architecture
 
 - **Frontend:** Flutter (Android & iOS) with MVVM architecture
 - **Backend & Database:** Firebase Firestore (cloud), local storage for offline support
@@ -80,8 +80,8 @@ Vello is an AI-powered personal finance management mobile application designed t
 
 ---
 
-## 🔍 Methodology
-
+ Methodology
+ 
 The system was developed following:
 
 - User surveys and questionnaire-based requirement elicitation (55 respondents)
@@ -93,7 +93,7 @@ The system was developed following:
 
 ---
 
-## 📈 Preliminary Results
+Preliminary Results
 
 Initial findings from user surveys, stakeholder analysis, and usability testing indicate that Vello significantly improves:
 
@@ -107,7 +107,7 @@ Collectively, these outcomes demonstrate that Vello provides a scalable, intelli
 
 ---
 
-## 🚀 Future Enhancements
+Future Enhancements
 
 - Integration with banking APIs through Open Banking standards for real-time transaction sync
 - Web and desktop version of the application
@@ -118,7 +118,7 @@ Collectively, these outcomes demonstrate that Vello provides a scalable, intelli
 
 ---
 
-## 🛠️ Technology Stack
+Technology Stack
 
 ### Mobile
 - **Flutter** – Cross-platform mobile framework for Android and iOS
@@ -145,7 +145,7 @@ Collectively, these outcomes demonstrate that Vello provides a scalable, intelli
 
 ---
 
-## 👥 Development Team — CS-113
+Development Team — CS-113
 
 | Name | Role | UoW ID | IIT ID |
 |------|------|--------|--------|
@@ -158,7 +158,7 @@ Collectively, these outcomes demonstrate that Vello provides a scalable, intelli
 
 ---
 
-## 🏫 Academic Information
+Academic Information
 
 | | |
 |---|---|
@@ -171,8 +171,8 @@ Collectively, these outcomes demonstrate that Vello provides a scalable, intelli
 | **Academic Year** | 2025/26 |
 
 ---
-
-## 📜 License
+License
 
 This project is developed for academic purposes as part of the Software Development Group Project (SDGP) module at the Informatics Institute of Technology (IIT), Sri Lanka.  
-All rights reserved ©️ 2026 Team Vello — CS-113
+All rights reserved 
+2026 Team Vello — CS-113
