@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pydantic[email]
+pydantic-settings
+python-dotenv
+supabase
+google-auth
+google-auth-oauthlib
+google-api-python-client
+httpx
+python-multipart
+python-jose[cryptography]
+passlib[bcrypt]

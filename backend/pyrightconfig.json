@@ -1,0 +1,12 @@
+{
+  "venvPath": "",
+  "pythonPath": "C:/Program Files/Python313/python.exe",
+  "reportMissingImports": false,
+  "reportMissingModuleSource": false,
+  "executionEnvironments": [
+    {
+      "root": "app",
+      "pythonPlatform": "Windows"
+    }
+  ]
+}
