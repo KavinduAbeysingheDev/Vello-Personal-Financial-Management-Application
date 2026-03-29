@@ -243,3 +243,71 @@ CREATE POLICY "Users can delete their own chat messages" ON chat_messages FOR DE
 -- debts policies
 ALTER TABLE debts ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can access their own debts" ON debts FOR ALL USING (auth.uid() = user_id);
+
+-- ==============================================================================
+-- 10. EVENTS (Event Planner CRUD)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS events (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    description TEXT,
+    event_date TIMESTAMPTZ NOT NULL,
+    end_date TIMESTAMPTZ,
+    location TEXT,
+    status TEXT NOT NULL DEFAULT 'planned',
+    spent_amount NUMERIC NOT NULL DEFAULT 0 CHECK (spent_amount >= 0),
+    budget_amount NUMERIC NOT NULL CHECK (budget_amount > 0),
+    icon INTEGER NOT NULL DEFAULT 0,
+    icon_color BIGINT NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_events_user_id ON events(user_id);
+CREATE INDEX IF NOT EXISTS idx_events_event_date ON events(event_date DESC);
+CREATE INDEX IF NOT EXISTS idx_events_status ON events(status);
+
+-- Compatibility bridge for older frontend payloads that used `date`.
+-- Keep nullable so existing inserts/updates continue to work.
+ALTER TABLE events ADD COLUMN IF NOT EXISTS date TEXT;
+
+-- Optional related places attached to an event
+CREATE TABLE IF NOT EXISTS event_places (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    address TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_event_places_event_id ON event_places(event_id);
+CREATE INDEX IF NOT EXISTS idx_event_places_user_id ON event_places(user_id);
+
+ALTER TABLE events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE event_places ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own events"
+ON events FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own events"
+ON events FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own events"
+ON events FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own events"
+ON events FOR DELETE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can view their own event places"
+ON event_places FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own event places"
+ON event_places FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own event places"
+ON event_places FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own event places"
+ON event_places FOR DELETE USING (auth.uid() = user_id);

@@ -51,16 +51,22 @@ class AppTransaction {
   }
 
   factory AppTransaction.fromSupabase(Map<String, dynamic> map) {
+    final sourceType = map['source_type'] ?? 'manual';
+    final amount = (map['amount'] as num).toDouble();
+    final type = sourceType == 'event_auto'
+        ? TransactionType.expense
+        : (amount >= 0 ? TransactionType.income : TransactionType.expense);
+
     return AppTransaction(
       id: map['id'],
       userId: map['user_id'],
       rawImportId: map['raw_import_id'],
-      sourceType: map['source_type'] ?? 'manual',
+      sourceType: sourceType,
       title: map['merchant'] ?? 'Unknown',
       category: map['category'] ?? 'Other',
-      amount: (map['amount'] as num).toDouble(),
+      amount: amount.abs(),
       date: DateTime.parse(map['transaction_date']),
-      type: (map['amount'] as num) >= 0 ? TransactionType.income : TransactionType.expense,
+      type: type,
       icon: Icons.receipt_long, // Fallback icon
     );
   }
@@ -93,7 +99,7 @@ class SavingsGoal {
       'target_amount': targetAmount,
       'current_amount': currentAmount,
       'icon_str': iconStr,
-      'color_hex': '#${color.value.toRadixString(16).padLeft(8, '0')}',
+      'color_hex': '#${color.toARGB32().toRadixString(16).padLeft(8, '0')}',
     };
   }
 

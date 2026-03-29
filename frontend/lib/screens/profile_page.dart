@@ -1,11 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../services/auth_service.dart';
-import '../models/user_model.dart';
-import 'login_screen.dart';
-import 'settings_screen_frontend.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:vello_app/l10n/app_localizations.dart';
+
+import '../models/user_model.dart';
+import '../services/auth_service.dart';
+import 'login_screen.dart';
 import 'setting_screen_backend.dart';
+import 'settings_screen_frontend.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -18,7 +21,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final AuthService _authService = AuthService();
   UserModel? _userModel;
   bool _isLoading = true;
-  bool _isSendingReset = false;
 
   @override
   void initState() {
@@ -38,55 +40,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       } else {
         setState(() => _isLoading = false);
       }
-    } catch (e) {
+    } catch (_) {
       setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _handleLogout() async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Log Out',
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
-        content: const Text('Are you sure you want to log out?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.grey),
-            ),
-          ),
-          ElevatedButton(
-          onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text(
-              'Log Out',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      await _authService.signOut();
-      if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-              (route) => false,
-        );
-      }
     }
   }
 
@@ -96,230 +51,219 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Consumer<SettingsProvider>(
       builder: (context, settings, _) {
+        final l10n = AppLocalizations.of(context)!;
         final isDark = settings.isDarkMode;
         final primaryColor = isDark ? const Color(0xFF14B8A6) : const Color(0xFF26a69a);
-        
+
         return Scaffold(
-            backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.grey[50],
-            appBar: AppBar(
-              backgroundColor: primaryColor,
-              elevation: 0,
-              title: Text(
-                settings.t('My Profile'),
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-              ),
-              iconTheme: const IconThemeData(color: Colors.white),
+          backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.grey[50],
+          appBar: AppBar(
+            backgroundColor: primaryColor,
+            elevation: 0,
+            title: Text(
+              l10n.myProfile,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
             ),
-            body: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : SingleChildScrollView(
-              child: Column(
-                children: [
-                Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [primaryColor, isDark ? const Color(0xFF1E293B) : const Color(0xFF1e8c82)],
-                  ),
-                ),
-                padding: const EdgeInsets.only(
-                    top: 30, bottom: 40, left: 24, right: 24),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 90,
-                      height: 90,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                            color: Colors.white.withOpacity(0.6), width: 3),
-                      ),
-                      child: Center(
-                        child: Text(
-                          _userModel?.name.isNotEmpty == true
-                              ? _userModel!.name[0].toUpperCase()
-                              : '?',
-                          style: const TextStyle(
-                            fontSize: 36,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+            iconTheme: const IconThemeData(color: Colors.white),
+          ),
+          body: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              primaryColor,
+                              isDark ? const Color(0xFF1E293B) : const Color(0xFF1e8c82),
+                            ],
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      _userModel?.name ?? settings.t('User'),
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _userModel?.email ?? supabaseUser?.email ?? '',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              Container(
-                height: 24,
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFF1e8c82),
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(30),
-                    bottomRight: Radius.circular(30),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      _buildInfoTile(
-                        icon: Icons.person_outline,
-                        label: settings.t('Full Name'),
-                        value: _userModel?.name ?? '—',
-                        isDark: isDark,
-                        primaryColor: primaryColor,
-                      ),
-                      _buildDivider(isDark),
-                      _buildInfoTile(
-                        icon: Icons.email_outlined,
-                        label: settings.t('Email Address'),
-                        value: _userModel?.email ??
-                            supabaseUser?.email ??
-                            '—',
-                        isDark: isDark,
-                        primaryColor: primaryColor,
-                      ),
-                      _buildDivider(isDark),
-                      _buildInfoTile(
-                        icon: Icons.calendar_today_outlined,
-                        label: settings.t('Member Since'),
-                        value: _userModel != null
-                            ? _formatDate(_userModel!.createdAt, settings)
-                            : '—',
-                        isDark: isDark,
-                        primaryColor: primaryColor,
-                      ),
-                      _buildDivider(isDark),
-                      _buildInfoTile(
-                        icon: Icons.fingerprint,
-                        label: settings.t('User ID'),
-                        value: supabaseUser?.id != null
-                            ? '${supabaseUser!.id.substring(0, 8)}...'
-                            : '—',
-                        isDark: isDark,
-                        primaryColor: primaryColor,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      _buildActionTile(
-                        icon: Icons.lock_outline,
-                        label: settings.t('Change Password'),
-                        onTap: () => _handleChangePasswordWrap(settings),
-                        isDark: isDark,
-                        primaryColor: primaryColor,
-                      ),
-                      _buildDivider(isDark),
-                      _buildActionTile(
-                        icon: Icons.settings_outlined,
-                        label: settings.t('Settings'),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const SettingsScreen(),
+                        padding: const EdgeInsets.only(top: 30, bottom: 40, left: 24, right: 24),
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 90,
+                              height: 90,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.3),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white.withOpacity(0.6), width: 3),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  _userModel?.name.isNotEmpty == true
+                                      ? _userModel!.name[0].toUpperCase()
+                                      : '?',
+                                  style: const TextStyle(
+                                    fontSize: 36,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
                             ),
-                          );
-                        },
-                        isDark: isDark,
-                        primaryColor: primaryColor,
+                            const SizedBox(height: 16),
+                            Text(
+                              _userModel?.name ?? l10n.user,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _userModel?.email ?? supabaseUser?.email ?? '',
+                              style: const TextStyle(fontSize: 14, color: Colors.white70),
+                            ),
+                          ],
+                        ),
                       ),
+                      Container(
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E293B) : const Color(0xFF1e8c82),
+                          borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(30),
+                            bottomRight: Radius.circular(30),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              _buildInfoTile(
+                                icon: Icons.person_outline,
+                                label: l10n.fullName,
+                                value: _userModel?.name ?? '-',
+                                isDark: isDark,
+                                primaryColor: primaryColor,
+                              ),
+                              _buildDivider(isDark),
+                              _buildInfoTile(
+                                icon: Icons.email_outlined,
+                                label: l10n.emailAddress,
+                                value: _userModel?.email ?? supabaseUser?.email ?? '-',
+                                isDark: isDark,
+                                primaryColor: primaryColor,
+                              ),
+                              _buildDivider(isDark),
+                              _buildInfoTile(
+                                icon: Icons.calendar_today_outlined,
+                                label: l10n.memberSince,
+                                value: _userModel != null
+                                    ? _formatDate(_userModel!.createdAt, context)
+                                    : '-',
+                                isDark: isDark,
+                                primaryColor: primaryColor,
+                              ),
+                              _buildDivider(isDark),
+                              _buildInfoTile(
+                                icon: Icons.fingerprint,
+                                label: l10n.userId,
+                                value: supabaseUser?.id != null
+                                    ? '${supabaseUser!.id.substring(0, 8)}...'
+                                    : '-',
+                                isDark: isDark,
+                                primaryColor: primaryColor,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              _buildActionTile(
+                                icon: Icons.lock_outline,
+                                label: l10n.changePassword,
+                                onTap: _handleChangePassword,
+                                isDark: isDark,
+                                primaryColor: primaryColor,
+                              ),
+                              _buildDivider(isDark),
+                              _buildActionTile(
+                                icon: Icons.settings_outlined,
+                                label: l10n.settings,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const SettingsScreen(),
+                                    ),
+                                  );
+                                },
+                                isDark: isDark,
+                                primaryColor: primaryColor,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 54,
+                          child: ElevatedButton.icon(
+                            onPressed: _handleLogout,
+                            icon: const Icon(Icons.logout, color: Colors.white),
+                            label: Text(
+                              l10n.logOut,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red.shade400,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 0,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
                     ],
                   ),
                 ),
-              ),
-
-              const SizedBox(height: 24),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 54,
-                      child: ElevatedButton.icon(
-                        onPressed: () => _handleLogoutWrap(settings),
-                        icon: const Icon(Icons.logout, color: Colors.white),
-                        label: Text(
-                          settings.t('Log Out'),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red.shade400,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 0,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 32),
-                ],
-              ),
-            ),
         );
       },
     );
@@ -425,51 +369,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  String _formatDate(DateTime date, SettingsProvider settings) {
-    final months = [
-      settings.t('Jan'), settings.t('Feb'), settings.t('Mar'), 
-      settings.t('Apr'), settings.t('May'), settings.t('Jun'),
-      settings.t('Jul'), settings.t('Aug'), settings.t('Sep'), 
-      settings.t('Oct'), settings.t('Nov'), settings.t('Dec')
-    ];
-    return '${months[date.month - 1]} ${date.day}, ${date.year}';
+  String _formatDate(DateTime date, BuildContext context) {
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    return DateFormat.yMMMd(locale).format(date);
   }
 
-  Future<void> _handleLogoutWrap(SettingsProvider settings) async {
-    final isDark = settings.isDarkMode;
+  Future<void> _handleLogout() async {
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Provider.of<SettingsProvider>(context, listen: false).isDarkMode;
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          settings.t('Log Out'),
+          l10n.logOut,
           style: TextStyle(fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black),
         ),
         content: Text(
-          settings.t('Are you sure you want to log out?'),
+          l10n.confirmLogout,
           style: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              settings.t('Cancel'),
-              style: const TextStyle(color: Colors.grey),
-            ),
+            child: Text(l10n.cancel, style: const TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
-          onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
-            child: Text(
-              settings.t('Log Out'),
-              style: const TextStyle(color: Colors.white),
-            ),
+            child: Text(l10n.logOut, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -481,25 +414,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const LoginScreen()),
-              (route) => false,
+          (route) => false,
         );
       }
     }
   }
 
-  Future<void> _handleChangePasswordWrap(SettingsProvider settings) async {
+  Future<void> _handleChangePassword() async {
+    final l10n = AppLocalizations.of(context)!;
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    final isDark = settings.isDarkMode;
+    final primaryColor = isDark ? const Color(0xFF14B8A6) : const Color(0xFF26a69a);
+
     final user = Supabase.instance.client.auth.currentUser;
     final email = _userModel?.email?.trim().isNotEmpty == true
         ? _userModel!.email.trim()
         : user?.email;
-    final isDark = settings.isDarkMode;
-    final primaryColor = isDark ? const Color(0xFF14B8A6) : const Color(0xFF26a69a);
 
     if (email == null || email.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(settings.t('No email address found for this account.')),
+            content: Text(l10n.noEmailFound),
             backgroundColor: Colors.red,
           ),
         );
@@ -513,43 +449,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: isDark ? const Color(0xFF1F2937) : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          settings.t('Reset Password'),
+          l10n.resetPassword,
           style: TextStyle(fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black),
         ),
         content: Text(
-          '${settings.t('A password reset email will be sent to')}:\n$email',
+          '${l10n.resetPasswordTo}:\n$email',
           style: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(settings.t('Cancel'), style: const TextStyle(color: Colors.grey)),
+            child: Text(l10n.cancel, style: const TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: primaryColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
-            child: Text(
-              settings.t('Send Email'),
-              style: const TextStyle(color: Colors.white),
-            ),
+            child: Text(l10n.sendEmail, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
 
     if (confirm == true) {
-      setState(() => _isSendingReset = true);
       try {
         await _authService.resetPassword(email);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${settings.t('Password reset email sent to')} $email'),
+              content: Text('${l10n.resetEmailSentTo} $email'),
               backgroundColor: Colors.green,
               duration: const Duration(seconds: 4),
             ),
@@ -559,14 +489,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${settings.t('Failed to send reset email')}: $e'),
+              content: Text('${l10n.resetEmailFailed}: $e'),
               backgroundColor: Colors.red,
               duration: const Duration(seconds: 4),
             ),
           );
         }
-      } finally {
-        if (mounted) setState(() => _isSendingReset = false);
       }
     }
   }

@@ -4,10 +4,14 @@ import '../models/app_models.dart';
 class TransactionRepository {
   final _client = Supabase.instance.client;
 
-  Future<List<AppTransaction>> fetchTransactions() async {
+  Future<List<AppTransaction>> fetchTransactions({String? userId}) async {
+    final resolvedUserId = userId ?? _client.auth.currentUser?.id;
+    if (resolvedUserId == null) return [];
+
     final response = await _client
         .from('transactions')
         .select()
+        .eq('user_id', resolvedUserId)
         .order('transaction_date', ascending: false);
     
     return (response as List).map((json) => AppTransaction.fromSupabase(json)).toList();

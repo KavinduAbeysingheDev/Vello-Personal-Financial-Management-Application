@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/app_models.dart';
 import '../models/budget.dart';
@@ -10,7 +9,6 @@ import '../repositories/debt_repository.dart';
 import '../repositories/budget_repository.dart';
 
 class AppProvider with ChangeNotifier {
-  final _uuid = const Uuid();
   bool _isLoaded = false;
 
   // Repositories
@@ -57,6 +55,7 @@ class AppProvider with ChangeNotifier {
       id: transaction.id,
       userId: userId,
       rawImportId: transaction.rawImportId,
+      sourceType: transaction.sourceType,
       title: transaction.title,
       category: transaction.category,
       amount: transaction.amount,
@@ -67,7 +66,14 @@ class AppProvider with ChangeNotifier {
     _transactions.insert(0, txWithUser);
     await syncBudgetStatus();
     notifyListeners();
-    await _txRepo.insertTransaction(txWithUser);
+    try {
+      await _txRepo.insertTransaction(txWithUser);
+    } catch (_) {
+      _transactions.removeWhere((t) => t.id == txWithUser.id);
+      await syncBudgetStatus();
+      notifyListeners();
+      rethrow;
+    }
   }
 
   Future<void> deleteTransaction(String id) async {

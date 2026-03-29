@@ -1,10 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../screens/home_screen.dart';
-import '../screens/event_planner_screen.dart';
-import '../features/bill_scanner/bill_scanner_screen.dart';
-import '../AI/AI_frontend.dart';
-import '../screens/add_transaction_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

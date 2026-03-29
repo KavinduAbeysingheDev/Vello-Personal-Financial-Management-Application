@@ -1,6 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:vello_app/l10n/app_localizations.dart';
+
 import '../services/finance_service.dart';
+import 'setting_screen_backend.dart';
 
 class AddTransactionScreen extends StatefulWidget {
   const AddTransactionScreen({super.key});
@@ -47,9 +51,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   List<String> get _categories {
-    return _selectedType == 'Expense'
-        ? _expenseCategories
-        : _incomeCategories;
+    return _selectedType == 'Expense' ? _expenseCategories : _incomeCategories;
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -67,6 +69,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   Future<void> _handleSubmit() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
@@ -84,8 +87,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Transaction added successfully'),
+            SnackBar(
+              content: Text(l10n.transactionAddedSuccessfully),
               backgroundColor: Colors.green,
             ),
           );
@@ -95,7 +98,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error: ${e.toString()}'),
+              content: Text('${l10n.errorPrefix}: ${e.toString()}'),
               backgroundColor: Colors.red,
             ),
           );
@@ -110,12 +113,21 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final settings = Provider.of<SettingsProvider>(context);
+    final isDark = settings.isDarkMode;
+    final bg = isDark ? const Color(0xFF111827) : Colors.grey[50]!;
+    final card = isDark ? const Color(0xFF1F2937) : Colors.white;
+    final textPrimary = isDark ? Colors.white : const Color(0xFF111827);
+    final textSecondary = isDark ? const Color(0xFF9CA3AF) : Colors.grey;
+    final borderColor = isDark ? const Color(0xFF374151) : Colors.grey.shade300;
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: bg,
       appBar: AppBar(
         backgroundColor: const Color(0xFF26a69a),
         elevation: 0,
-        title: const Text('Add Transaction'),
+        title: Text(l10n.addTransaction),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.pop(context),
@@ -129,36 +141,37 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(
-                  'Add a new income or expense transaction to your account.',
-                  style: TextStyle(color: Colors.grey),
+                Text(
+                  l10n.addTransactionDescription,
+                  style: TextStyle(color: textSecondary),
                 ),
                 const SizedBox(height: 24),
-
-                // Type Selection
-                const Text(
-                  'Type',
+                Text(
+                  l10n.type,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
+                    color: textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: card,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade300),
+                    border: Border.all(color: borderColor),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       isExpanded: true,
                       value: _selectedType,
+                      dropdownColor: card,
+                      style: TextStyle(color: textPrimary),
                       items: _types.map((String type) {
                         return DropdownMenuItem<String>(
                           value: type,
-                          child: Text(type),
+                          child: Text(_typeLabel(type, l10n)),
                         );
                       }).toList(),
                       onChanged: (String? newValue) {
@@ -170,106 +183,107 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
-                // Title Field
-                const Text(
-                  'Title',
+                Text(
+                  l10n.title,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
+                    color: textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _titleController,
+                  style: TextStyle(color: textPrimary),
                   decoration: InputDecoration(
-                    hintText: 'Enter transaction title',
+                    hintText: l10n.enterTransactionTitle,
+                    hintStyle: TextStyle(color: textSecondary),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: card,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
+                      borderSide: BorderSide(color: borderColor),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
+                      borderSide: BorderSide(color: borderColor),
                     ),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a title';
+                      return l10n.pleaseEnterTitle;
                     }
                     return null;
                   },
                 ),
-
                 const SizedBox(height: 20),
-
-                // Amount Field
-                const Text(
-                  'Amount',
+                Text(
+                  l10n.amount,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
+                    color: textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _amountController,
                   keyboardType: TextInputType.number,
+                  style: TextStyle(color: textPrimary),
                   decoration: InputDecoration(
                     hintText: '0.00',
                     prefixText: '\$ ',
+                    hintStyle: TextStyle(color: textSecondary),
+                    prefixStyle: TextStyle(color: textSecondary),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: card,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
+                      borderSide: BorderSide(color: borderColor),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
+                      borderSide: BorderSide(color: borderColor),
                     ),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter an amount';
+                      return l10n.pleaseEnterAmount;
                     }
                     if (double.tryParse(value) == null) {
-                      return 'Please enter a valid number';
+                      return l10n.pleaseEnterValidNumber;
                     }
                     return null;
                   },
                 ),
-
                 const SizedBox(height: 20),
-
-                // Category Field
-                const Text(
-                  'Category',
+                Text(
+                  l10n.category,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
+                    color: textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: card,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade300),
+                    border: Border.all(color: borderColor),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       isExpanded: true,
                       value: _selectedCategory,
+                      dropdownColor: card,
+                      style: TextStyle(color: textPrimary),
                       items: _categories.map((String category) {
                         return DropdownMenuItem<String>(
                           value: category,
-                          child: Text(category),
+                          child: Text(_categoryLabel(category, l10n)),
                         );
                       }).toList(),
                       onChanged: (String? newValue) {
@@ -280,15 +294,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
-                // Date Field
-                const Text(
-                  'Date',
+                Text(
+                  l10n.date,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
+                    color: textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -297,26 +309,23 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: card,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade300),
+                      border: Border.all(color: borderColor),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           '${_selectedDate.month}/${_selectedDate.day}/${_selectedDate.year}',
-                          style: const TextStyle(fontSize: 16),
+                          style: TextStyle(fontSize: 16, color: textPrimary),
                         ),
-                        const Icon(Icons.calendar_today, color: Colors.grey),
+                        Icon(Icons.calendar_today, color: textSecondary),
                       ],
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 40),
-
-                // Submit Button
                 SizedBox(
                   height: 54,
                   child: ElevatedButton(
@@ -329,22 +338,21 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     ),
                     child: _isLoading
                         ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor:
-                        AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                        : const Text(
-                      'Add Transaction',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : Text(
+                            l10n.addTransaction,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
                 ),
               ],
@@ -353,5 +361,38 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         ),
       ),
     );
+  }
+
+  String _typeLabel(String value, AppLocalizations l10n) {
+    return value == 'Income' ? l10n.income : l10n.expense;
+  }
+
+  String _categoryLabel(String value, AppLocalizations l10n) {
+    switch (value) {
+      case 'Food':
+        return l10n.food;
+      case 'Transportation':
+        return l10n.transportation;
+      case 'Entertainment':
+        return l10n.entertainment;
+      case 'Shopping':
+        return l10n.shopping;
+      case 'Bills':
+        return l10n.bills;
+      case 'Healthcare':
+        return l10n.healthcare;
+      case 'Education':
+        return l10n.education;
+      case 'Salary':
+        return l10n.salary;
+      case 'Freelance':
+        return l10n.freelance;
+      case 'Investment':
+        return l10n.investment;
+      case 'Gift':
+        return l10n.gift;
+      default:
+        return l10n.other;
+    }
   }
 }

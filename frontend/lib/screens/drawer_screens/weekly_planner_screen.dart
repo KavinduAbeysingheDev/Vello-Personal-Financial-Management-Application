@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../features/weekly_planner/weekly_planner_service.dart';
 
-// ─── Conversation state ────────────────────────────────────────────────────────
-
-enum _PlannerState { greeting, awaitingExpenses, planGenerated }
+import '../../features/weekly_planner/domain/planner_state.dart';
+import '../../features/weekly_planner/logic/planner_conversation_manager.dart';
+import '../setting_screen_backend.dart';
 
 class _PlannerMessage {
   final String text;
@@ -14,8 +14,6 @@ class _PlannerMessage {
   _PlannerMessage({required this.text, required this.isUser})
       : time = DateTime.now();
 }
-
-// ─── Screen ────────────────────────────────────────────────────────────────────
 
 class WeeklyPlannerScreen extends StatefulWidget {
   const WeeklyPlannerScreen({super.key});
@@ -27,15 +25,12 @@ class WeeklyPlannerScreen extends StatefulWidget {
 class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
   static const _green = Color(0xFF00674F);
   static const _lightGreen = Color(0xFFEAF9F3);
-  static const _darkGreen = Color(0xFF004D40);
 
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
-  final _service = WeeklyPlannerService();
-
+  final _manager = PlannerConversationManager();
   final List<_PlannerMessage> _messages = [];
-  _PlannerState _state = _PlannerState.greeting;
-  WeeklyPlan? _lastPlan;
+
   bool _isTyping = false;
   late final String _userId;
   late final bool _isWeekend;
@@ -56,32 +51,14 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
     super.dispose();
   }
 
-  // ── Greeting ────────────────────────────────────────────────────────────────
-
   void _sendGreeting() {
-    if (!_isWeekend) {
-      _addAiMessage(
-        "This weekly planner is available on weekends only.\n\n"
-        "Come back on Saturday or Sunday to plan your spending for the week ahead!",
-      );
-      return;
-    }
-
-    _addAiMessage(
-      "Hi! I'm your Weekly Budget Planner.\n\n"
-      "Every weekend I help you build a personalised budget for the coming week "
-      "using your actual balance, spending history, and savings goals.\n\n"
-      "Tell me your planned expenses for next week. For example:\n"
-      '"food 5000, transport 2000, entertainment 1500, health 1000"',
-    );
-    setState(() => _state = _PlannerState.awaitingExpenses);
+    final greeting = _manager.greeting(isWeekend: _isWeekend);
+    _addAiMessage(greeting);
   }
-
-  // ── Message handling ────────────────────────────────────────────────────────
 
   Future<void> _handleSend(String text) async {
     final trimmed = text.trim();
-    if (trimmed.isEmpty || !_isWeekend) return;
+    if (trimmed.isEmpty) return;
 
     _addUserMessage(trimmed);
     _controller.clear();
@@ -89,47 +66,23 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
     setState(() => _isTyping = true);
     _scrollToBottom();
 
-    // Small artificial delay for UX
-    await Future.delayed(const Duration(milliseconds: 600));
+    await Future.delayed(const Duration(milliseconds: 350));
 
-    if (_state == _PlannerState.awaitingExpenses ||
-        _state == _PlannerState.planGenerated) {
-      await _handlePlanInput(trimmed);
-    }
-  }
-
-  Future<void> _handlePlanInput(String text) async {
     try {
-      final plan = await _service.generateWeeklyPlan(_userId, text);
-
-      if (plan == null) {
-        // Could not parse expenses — treat as follow-up
-        final reply = _service.formatFollowUpResponse(_lastPlan, text);
-        _addAiMessage(reply);
+      final reply = await _manager.handleUserMessage(
+        userId: _userId,
+        message: trimmed,
+        isWeekend: _isWeekend,
+      );
+      _addAiMessage(reply);
+    } catch (_) {
+      _addAiMessage('Could not build a plan right now. Please try again.');
+    } finally {
+      if (mounted) {
         setState(() => _isTyping = false);
-        return;
       }
-
-      _lastPlan = plan;
-      final response = _service.formatPlanResponse(plan);
-      _addAiMessage(response);
-      _addAiMessage(
-        'You can adjust any category — just tell me the new amounts and I\'ll update the plan.',
-      );
-      setState(() {
-        _isTyping = false;
-        _state = _PlannerState.planGenerated;
-      });
-    } catch (e) {
-      _addAiMessage(
-        'Sorry, I ran into a problem fetching your financial data. '
-        'Please check your connection and try again.',
-      );
-      setState(() => _isTyping = false);
     }
   }
-
-  // ── Message helpers ─────────────────────────────────────────────────────────
 
   void _addUserMessage(String text) {
     setState(() => _messages.add(_PlannerMessage(text: text, isUser: true)));
@@ -153,13 +106,11 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
     });
   }
 
-  // ── Build ───────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
+    final isDark = Provider.of<SettingsProvider>(context).isDarkMode;
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F6),
-      appBar: _buildAppBar(),
+      backgroundColor: isDark ? const Color(0xFF111827) : const Color(0xFFF3F4F6),
       body: Column(
         children: [
           if (_isWeekend) _buildWeekendBanner(),
@@ -171,54 +122,15 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: _darkGreen,
-      foregroundColor: Colors.white,
-      elevation: 0,
-      title: Row(
-        children: [
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.calendar_month_outlined,
-              color: Colors.white,
-              size: 18,
-            ),
-          ),
-          const SizedBox(width: 10),
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Weekly Budget Planner',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-              ),
-              Text(
-                'Rule-based AI Agent',
-                style: TextStyle(fontSize: 11, color: Colors.white70),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildWeekendBanner() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       color: _green.withOpacity(0.1),
-      child: Row(
+      child: const Row(
         children: [
-          const Icon(Icons.check_circle_outline, color: _green, size: 16),
-          const SizedBox(width: 8),
+          Icon(Icons.check_circle_outline, color: _green, size: 16),
+          SizedBox(width: 8),
           Text(
             'Weekend planning is active',
             style: TextStyle(
@@ -242,6 +154,7 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
   }
 
   Widget _buildBubble(_PlannerMessage msg) {
+    final isDark = Provider.of<SettingsProvider>(context, listen: false).isDarkMode;
     final isUser = msg.isUser;
     final timeStr =
         '${msg.time.hour.toString().padLeft(2, '0')}:${msg.time.minute.toString().padLeft(2, '0')}';
@@ -249,8 +162,7 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
-        mainAxisAlignment:
-            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isUser) _buildAvatar(isUser: false),
@@ -261,12 +173,11 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
                   isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   decoration: BoxDecoration(
-                    color: isUser ? const Color(0xFF065F46) : Colors.white,
+                    color: isUser
+                        ? const Color(0xFF065F46)
+                        : (isDark ? const Color(0xFF1F2937) : Colors.white),
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(18),
                       topRight: const Radius.circular(18),
@@ -284,7 +195,9 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
                   child: Text(
                     msg.text,
                     style: TextStyle(
-                      color: isUser ? Colors.white : const Color(0xFF1F2937),
+                      color: isUser
+                          ? Colors.white
+                          : (isDark ? Colors.white : const Color(0xFF1F2937)),
                       fontSize: 13.5,
                       height: 1.5,
                     ),
@@ -293,8 +206,10 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
                 const SizedBox(height: 4),
                 Text(
                   timeStr,
-                  style:
-                      const TextStyle(color: Colors.grey, fontSize: 10),
+                  style: TextStyle(
+                    color: isDark ? const Color(0xFF9CA3AF) : Colors.grey,
+                    fontSize: 10,
+                  ),
                 ),
               ],
             ),
@@ -307,19 +222,18 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
   }
 
   Widget _buildAvatar({required bool isUser}) {
+    final isDark = Provider.of<SettingsProvider>(context, listen: false).isDarkMode;
     return Container(
       width: 30,
       height: 30,
       decoration: BoxDecoration(
         color: isUser
-            ? const Color(0xFFE5E7EB)
+            ? (isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB))
             : _lightGreen,
         shape: BoxShape.circle,
       ),
       child: Icon(
-        isUser
-            ? Icons.person_outline
-            : Icons.calendar_month_outlined,
+        isUser ? Icons.person_outline : Icons.calendar_month_outlined,
         size: 16,
         color: isUser ? Colors.grey : _green,
       ),
@@ -327,6 +241,8 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
   }
 
   Widget _buildTypingRow() {
+    final isDark = Provider.of<SettingsProvider>(context, listen: false).isDarkMode;
+
     return Padding(
       padding: const EdgeInsets.only(left: 24, bottom: 8),
       child: Row(
@@ -336,13 +252,13 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? const Color(0xFF1F2937) : Colors.white,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(
+                const SizedBox(
                   width: 12,
                   height: 12,
                   child: CircularProgressIndicator(
@@ -350,10 +266,13 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
                     color: _green,
                   ),
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Text(
-                  'Analysing your finances...',
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                  'Building your weekly plan...',
+                  style: TextStyle(
+                    color: isDark ? const Color(0xFF9CA3AF) : Colors.grey,
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -364,25 +283,26 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
   }
 
   Widget _buildInputBar() {
+    final isDark = Provider.of<SettingsProvider>(context, listen: false).isDarkMode;
+    final showQuickChips = _isWeekend && _manager.state == PlannerState.awaitingPlan;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF111827) : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black12,
+            color: isDark ? Colors.black54 : Colors.black12,
             blurRadius: 16,
-            offset: Offset(0, -4),
+            offset: const Offset(0, -4),
           ),
         ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Quick-fill chips
-          if (_isWeekend && _state == _PlannerState.awaitingExpenses)
-            _buildChipRow(),
+          if (showQuickChips) _buildChipRow(),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -395,14 +315,15 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
                   textInputAction: TextInputAction.send,
                   decoration: InputDecoration(
                     hintText: _isWeekend
-                        ? 'e.g. food 5000, transport 2000...'
+                        ? 'e.g. food 5000, transport 2000'
                         : 'Available on weekends only',
                     hintStyle: const TextStyle(
                       color: Color(0xFF9CA3AF),
                       fontSize: 13,
                     ),
                     filled: true,
-                    fillColor: const Color(0xFFF3F4F6),
+                    fillColor:
+                        isDark ? const Color(0xFF1F2937) : const Color(0xFFF3F4F6),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(24),
                       borderSide: BorderSide.none,
@@ -416,13 +337,13 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
               ),
               const SizedBox(width: 10),
               GestureDetector(
-                onTap: _isWeekend
-                    ? () => _handleSend(_controller.text)
-                    : null,
+                onTap: _isWeekend ? () => _handleSend(_controller.text) : null,
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: _isWeekend ? _green : Colors.grey.shade300,
+                    color: _isWeekend
+                        ? _green
+                        : (isDark ? const Color(0xFF374151) : Colors.grey.shade300),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -440,12 +361,15 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
   }
 
   Widget _buildChipRow() {
-    final chips = [
+    final isDark = Provider.of<SettingsProvider>(context, listen: false).isDarkMode;
+
+    const chips = [
       'food 5000, transport 2000',
-      'entertainment 1500',
-      'health 1000',
-      'How much can I save?',
+      '5000 for food',
+      'change food to 4500',
+      'how much can I save',
     ];
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -455,21 +379,16 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
                 onTap: () => _handleSend(c),
                 child: Container(
                   margin: const EdgeInsets.only(right: 8),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: _lightGreen,
+                    color: isDark ? const Color(0xFF1F2937) : _lightGreen,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: _green.withOpacity(0.3),
-                    ),
+                    border: Border.all(color: _green.withOpacity(0.3)),
                   ),
                   child: Text(
                     c,
-                    style: const TextStyle(
-                      color: _darkGreen,
+                    style: TextStyle(
+                      color: isDark ? const Color(0xFFD1FAE5) : const Color(0xFF004D40),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -482,3 +401,4 @@ class _WeeklyPlannerScreenState extends State<WeeklyPlannerScreen> {
     );
   }
 }
+

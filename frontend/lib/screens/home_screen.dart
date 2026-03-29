@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:vello_app/l10n/app_localizations.dart';
 import '../screens/setting_screen_backend.dart';
 import '../Statistic/Statistic_backend.dart';
 import 'package:provider/provider.dart';
@@ -38,17 +39,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
     final settings = Provider.of<SettingsProvider>(context);
+    final l10n = AppLocalizations.of(context)!;
     final isDark = settings.isDarkMode;
 
     final children = [
-      _balanceCard(provider.totalBalance, provider.savingsRate, settings),
+      _balanceCard(provider.totalBalance, provider.savingsRate, settings, l10n),
       const SizedBox(height: 14),
       Row(
         children: [
           Expanded(
             child: _smallInfoCard(
               context: context,
-              title: settings.t('Income'),
+              title: l10n.income,
               amount: '\$${provider.totalIncome.toStringAsFixed(2)}',
               color: const Color(0xFF0DA66E),
               icon: Icons.arrow_downward,
@@ -59,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           Expanded(
             child: _smallInfoCard(
               context: context,
-              title: settings.t('Expenses'),
+              title: l10n.expenses,
               amount: '\$${provider.totalExpense.toStringAsFixed(2)}',
               color: const Color(0xFFFF1744),
               icon: Icons.arrow_upward,
@@ -69,11 +71,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         ],
       ),
       const SizedBox(height: 14),
-      _savingRateCard(provider.savingsRate, settings),
+      _savingRateCard(provider.savingsRate, settings, l10n),
       const SizedBox(height: 14),
-      _budgetOverviewCard(provider, settings),
+      _budgetOverviewCard(provider, settings, l10n),
       const SizedBox(height: 14),
-      _recentTransactionsCard(provider.transactions, settings),
+      _recentTransactionsCard(provider.transactions, settings, l10n),
     ];
 
     return Scaffold(
@@ -115,21 +117,26 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _balanceCard(double totalBalance, double savingsRate, SettingsProvider settings) {
+  Widget _balanceCard(
+    double totalBalance,
+    double savingsRate,
+    SettingsProvider settings,
+    AppLocalizations l10n,
+  ) {
     String emoji;
     String labelKey;
     if (totalBalance < 0) {
-      emoji = '🔴';
-      labelKey = 'Negative Balance';
+      emoji = 'ðŸ”´';
+      labelKey = l10n.negativeBalance;
     } else if (savingsRate >= 70) {
-      emoji = '💚';
-      labelKey = 'Excellent Balance';
+      emoji = 'ðŸ’š';
+      labelKey = l10n.excellentBalance;
     } else if (savingsRate >= 40) {
-      emoji = '💛';
-      labelKey = 'Healthy Balance';
+      emoji = 'ðŸ’›';
+      labelKey = l10n.healthyBalance;
     } else {
-      emoji = '🟠';
-      labelKey = 'Watch Your Spending';
+      emoji = 'ðŸŸ ';
+      labelKey = l10n.watchYourSpending;
     }
 
     return Container(
@@ -148,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         children: [
           Row(
             children: [
-              Text(settings.t('Total Balance'), style: const TextStyle(color: Colors.white70, fontSize: 15)),
+              Text(l10n.totalBalance, style: const TextStyle(color: Colors.white70, fontSize: 15)),
               const Spacer(),
               Icon(Icons.auto_awesome, color: Colors.white.withOpacity(0.9), size: 20),
             ],
@@ -175,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '$emoji ${settings.t(labelKey)}',
+                    '$emoji $labelKey',
                     style: const TextStyle(color: Colors.white70, fontSize: 13),
                   ),
                 ],
@@ -227,7 +234,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _savingRateCard(double savingsRate, SettingsProvider settings) {
+  Widget _savingRateCard(double savingsRate, SettingsProvider settings, AppLocalizations l10n) {
     final isDark = settings.isDarkMode;
     final isPositive = savingsRate >= 0;
     return Container(
@@ -253,7 +260,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(settings.t('Savings Rate'), style: TextStyle(color: isDark ? Colors.white70 : const Color(0xFFCA6F00))),
+              Text(l10n.savingsRate, style: TextStyle(color: isDark ? Colors.white70 : const Color(0xFFCA6F00))),
               const SizedBox(height: 2),
               Text(
                 '${savingsRate.toStringAsFixed(1)}%',
@@ -266,24 +273,24 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ],
           ),
           const Spacer(),
-          Text(isPositive ? '💰' : '⚠️', style: const TextStyle(fontSize: 28)),
+          Text(isPositive ? 'ðŸ’°' : 'âš ï¸', style: const TextStyle(fontSize: 28)),
         ],
       ),
     );
   }
 
-  Widget _budgetOverviewCard(AppProvider provider, SettingsProvider settings) {
+  Widget _budgetOverviewCard(AppProvider provider, SettingsProvider settings, AppLocalizations l10n) {
     final budgets = provider.budgets;
     final isDark = settings.isDarkMode;
 
     if (budgets.isEmpty) {
       return _sectionCard(
         context: context,
-        title: '${settings.t('Budget Overview')} 📊',
+        title: '${l10n.budgetOverview} ðŸ“Š',
         child: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Text(settings.t('No budgets set. Set limits in the side menu!'), 
+            child: Text(l10n.noBudgetsSet, 
               style: const TextStyle(color: Colors.grey, fontSize: 13)),
           ),
         ),
@@ -300,7 +307,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
     return _sectionCard(
       context: context,
-      title: '${settings.t('Monthly Budget Status')} 📊',
+      title: '${l10n.monthlyBudgetStatus} ðŸ“Š',
       child: Column(
         children: budgets.asMap().entries.map((entry) {
           final b = entry.value;
@@ -309,7 +316,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           return Padding(
             padding: const EdgeInsets.only(bottom: 14),
             child: BudgetBar(
-              label: settings.t(b.category), // Category names could be keys too
+              label: b.category, // Category names could be keys too
               valueText: '\$${b.currentSpent.toStringAsFixed(0)} / \$${b.amountLimit.toStringAsFixed(0)}',
               progress: progress,
               color: b.isOverspent ? Colors.red : colors[idx % colors.length],
@@ -321,15 +328,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _recentTransactionsCard(List<AppTransaction> transactions, SettingsProvider settings) {
+  Widget _recentTransactionsCard(List<AppTransaction> transactions, SettingsProvider settings, AppLocalizations l10n) {
     return _sectionCard(
       context: context,
-      title: '${settings.t('Recent Transactions')} ⚡',
+      title: '${l10n.recentTransactions} âš¡',
       child: transactions.isEmpty
           ? Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Center(
-                child: Text(settings.t('No transactions yet. Tap + to add one!'),
+                child: Text(l10n.noTransactionsYet,
                     style: const TextStyle(color: Colors.grey)),
               ),
             )
@@ -338,7 +345,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 final isIncome = t.type == TransactionType.income;
                 return TxTile(
                   title: t.title,
-                  subtitle: settings.t(t.category),
+                  subtitle: t.category,
                   amount: '${isIncome ? '+' : '-'}\$${t.amount.toStringAsFixed(2)}',
                   amountColor: isIncome ? const Color(0xFF0DA66E) : const Color(0xFFFF1744),
                   icon: t.icon,
@@ -471,3 +478,5 @@ class TxTile extends StatelessWidget {
     );
   }
 }
+
+

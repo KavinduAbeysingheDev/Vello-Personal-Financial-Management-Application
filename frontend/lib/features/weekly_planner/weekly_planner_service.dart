@@ -53,7 +53,7 @@ class WeeklyPlannerService {
   // ── Public helpers ──────────────────────────────────────────────────────────
 
   Future<double> fetchCurrentBalance(String userId) async {
-    final transactions = await _txRepo.fetchTransactions();
+    final transactions = await _txRepo.fetchTransactions(userId: userId);
     final income = transactions
         .where((t) => t.type == TransactionType.income)
         .fold<double>(0, (sum, t) => sum + t.amount);
@@ -64,7 +64,7 @@ class WeeklyPlannerService {
   }
 
   Future<Map<String, double>> fetchWeeklyAverageByCategory(String userId) async {
-    final transactions = await _txRepo.fetchTransactions();
+    final transactions = await _txRepo.fetchTransactions(userId: userId);
     final fourWeeksAgo = DateTime.now().subtract(const Duration(days: 28));
 
     final recent = transactions.where(
@@ -82,7 +82,7 @@ class WeeklyPlannerService {
   }
 
   Future<List<SavingsGoal>> fetchSavingsGoals(String userId) async {
-    return _goalRepo.fetchGoals();
+    return _goalRepo.fetchGoals(userId: userId);
   }
 
   // ── Core plan generation ────────────────────────────────────────────────────
@@ -97,7 +97,7 @@ class WeeklyPlannerService {
 
     final balance = await fetchCurrentBalance(userId);
     final avgByCategory = await fetchWeeklyAverageByCategory(userId);
-    final goals = await _goalRepo.fetchGoals();
+    final goals = await _goalRepo.fetchGoals(userId: userId);
 
     // Weekly savings target = sum of remaining amounts across active goals / 4
     double savingsTarget = 0;

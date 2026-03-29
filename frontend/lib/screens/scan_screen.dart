@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
-import '../widgets/vello_drawer.dart';
-import '../screens/setting_screen_backend.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:vello_app/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+
+import '../screens/setting_screen_backend.dart';
+import '../widgets/vello_drawer.dart';
 
 class ScanScreen extends StatefulWidget {
   const ScanScreen({super.key});
@@ -14,12 +16,13 @@ class _ScanScreenState extends State<ScanScreen> {
   bool _isScanning = false;
 
   void _simulateScan(SettingsProvider settings) {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _isScanning = true);
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() => _isScanning = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(settings.t('Receipt successfully scanned! $34.50 added.🎯'))),
+          SnackBar(content: Text(l10n.receiptScanSuccess)),
         );
       }
     });
@@ -42,6 +45,7 @@ class _ScanScreenState extends State<ScanScreen> {
   }
 
   Widget _buildCameraView(SettingsProvider settings) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -57,12 +61,12 @@ class _ScanScreenState extends State<ScanScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-               Icon(Icons.receipt_long, color: Colors.white.withOpacity(0.5), size: 100),
-               const SizedBox(height: 16),
-               Text(
-                 settings.t("Align receipt within the frame"),
-                 style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16),
-               ),
+              Icon(Icons.receipt_long, color: Colors.white.withOpacity(0.5), size: 100),
+              const SizedBox(height: 16),
+              Text(
+                l10n.alignReceiptWithinFrame,
+                style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16),
+              ),
             ],
           ),
         ),
@@ -71,6 +75,7 @@ class _ScanScreenState extends State<ScanScreen> {
   }
 
   Widget _buildScanningOverlay(SettingsProvider settings) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       color: Colors.black.withOpacity(0.7),
       child: Center(
@@ -80,7 +85,7 @@ class _ScanScreenState extends State<ScanScreen> {
             const CircularProgressIndicator(color: Color(0xFF0DBE82)),
             const SizedBox(height: 20),
             Text(
-              settings.t("Analyzing Receipt..."),
+              l10n.analyzingReceipt,
               style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 18),
             ),
           ],
@@ -92,12 +97,17 @@ class _ScanScreenState extends State<ScanScreen> {
   Widget _buildBottomControls(SettingsProvider settings) {
     final isDark = settings.isDarkMode;
     return Positioned(
-      bottom: 0, left: 0, right: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1F2937) : Colors.white,
-          borderRadius: const BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(30),
+            topRight: Radius.circular(30),
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -137,3 +147,4 @@ class _ScanScreenState extends State<ScanScreen> {
     );
   }
 }
+
